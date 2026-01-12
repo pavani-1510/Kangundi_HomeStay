@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Kangundi HomeStay{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <div class="hero-section">
+        <div class="hero-content">
+            <p class="eyebrow">Kangundi • Bouldering Hub</p>
+            <h1>Welcome, {{ user.username }}!</h1>
+            <p class="tagline">Basecamp for sandstone boulders with the comfort of Kangundi HomeStay</p>
+            
+            <div class="action-buttons">
+                <a class="cta-btn primary" href="#">View Bookings</a>
+                <a class="cta-btn secondary" href="{{ url_for('rooms') }}">Browse Rooms</a>
+                <a class="cta-btn secondary" href="{{ url_for('logout') }}">Logout</a>
+            </div>
+        </div>
+        <div class="hero-image-container">
+            <img src="{{ url_for('static', filename='images/image.jpg') }}" alt="Kangundi Bouldering Paradise" class="hero-image" data-animate="fade-in">
+        </div>
+    </div>
+
+    <div class="content-flow">
+        <div id="about" class="section-block">
+            <div class="section-title">
+                <h2>About Kangundi</h2>
+                <p class="section-desc">A bouldering paradise in the mountains</p>
+            </div>
+            <p class="section-text">Kangundi is a picturesque village set among sandstone giants. The area is packed with classic boulder problems that attract climbers from beginners to seasoned crushers.</p>
+            
+            <div class="highlights">
+                <div class="highlight-item">
+                    <span class="highlight-icon">🪨</span>
+                    <p>Sandstone slabs, aretes, and roofs</p>
+                </div>
+                <div class="highlight-item">
+                    <span class="highlight-icon">🏕️</span>
+                    <p>Short walk-ins from the village</p>
+                </div>
+                <div class="highlight-item">
+                    <span class="highlight-icon">🌤️</span>
+                    <p>Best season: October – February</p>
+                </div>
+                <div class="highlight-item">
+                    <span class="highlight-icon">🧭</span>
+                    <p>Grades from V0 to V10+</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="homestay" class="section-block">
+            <div class="section-title">
+                <h2>Kangundi HomeStay</h2>
+                <p class="section-desc">Your perfect basecamp for climbing adventures</p>
+            </div>
+            <p class="section-text">Stay close to the boulder fields with a homestay designed for climbers. We combine local warmth with practical support so you can focus on sending.</p>
+            
+            <div class="benefits">
+                <div class="benefit">
+                    <h3>🚶 Trailhead Proximity</h3>
+                    <p>Walk to the best blocs in minutes—no long drives needed.</p>
+                </div>
+                <div class="benefit">
+                    <h3>🎒 Gear & Pads</h3>
+                    <p>Crash pad access, storage, and tips on must-try problems.</p>
+                </div>
+                <div class="benefit">
+                    <h3>🗺️ Local Beta</h3>
+                    <p>Routes, conditions, rest-day ideas, and hidden gems.</p>
+                </div>
+                <div class="benefit">
+                    <h3>🍲 Fuel & Recovery</h3>
+                    <p>Home-cooked meals and comfortable rooms to recharge.</p>
+                </div>
+            </div>
+
+            <div class="final-cta">
+                <h3>Ready to start your bouldering journey?</h3>
+                <div class="action-buttons">
+                    <a class="cta-btn primary" href="#">View Bookings</a>
+                    <a class="cta-btn secondary" href="#about">Browse Rooms</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
