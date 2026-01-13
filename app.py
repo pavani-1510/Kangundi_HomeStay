@@ -1,12 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import os
 import random
 import string
+import requests
 
 # Load environment variables
 load_dotenv()
@@ -14,11 +15,20 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-change-this-in-production')
 
+# Session configuration - 1 hour timeout
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
+app.config['SESSION_REFRESH_EACH_REQUEST'] = True  # Refresh session on each request (rolling timeout)
+
 # Initialize Supabase client
 supabase_url = os.getenv('SUPABASE_URL')
 supabase_key = os.getenv('SUPABASE_KEY')
 
 supabase: Client = create_client(supabase_url, supabase_key)
+
+# MSG91 Configuration for SMS OTP
+MSG91_AUTH_KEY = os.getenv('MSG91_AUTH_KEY', '')
+MSG91_TEMPLATE_ID = os.getenv('MSG91_TEMPLATE_ID', '')
+MSG91_SENDER_ID = os.getenv('MSG91_SENDER_ID', 'KANGND')  # 6 characters max
 
 # Helper functions for database operations
 def get_user_by_phone(phone_number):
@@ -63,6 +73,57 @@ def create_user(name, phone_number, username=None, password_hash=None, is_admin=
 def generate_otp():
     """Generate a 6-digit OTP"""
     return ''.join(random.choices(string.digits, k=6))
+
+
+def send_otp_via_msg91(phone_number, otp):
+    """Send OTP via MSG91 SMS"""
+    if not MSG91_AUTH_KEY:
+        print("MSG91_AUTH_KEY not configured. OTP not sent.")
+        print(f"DEBUG - OTP for {phone_number}: {otp}")
+        return True  # Return True for testing without API key
+    
+    try:
+        # Remove +91 if present and ensure 10 digits
+        phone = phone_number.replace('+91', '').replace('+', '').strip()
+        
+        # Custom message
+        message = f"Your otp to login to Kangundi Homestay is {otp}. Please ignore if this is not by you."
+        
+        # MSG91 SMS API endpoint (using sendhttp.php for custom messages)
+        url = "https://control.msg91.com/api/sendhttp.php"
+        
+        params = {
+            "authkey": MSG91_AUTH_KEY,
+            "mobiles": f"91{phone}",
+            "sender": MSG91_SENDER_ID,
+            "route": "1",  # Promotional route (works for DND numbers)
+            "country": "91",
+            "message": message
+        }
+        
+        print(f"Sending OTP to {phone} with sender ID: {MSG91_SENDER_ID}")
+        print(f"Request params: {params}")
+        
+        response = requests.get(url, params=params)
+        
+        print(f"MSG91 Response Status: {response.status_code}")
+        print(f"MSG91 Response Body: {response.text}")
+        
+        # MSG91 returns message ID on success (hex encoded) or error text on failure
+        # Check for error keywords instead
+        error_keywords = ["error", "invalid", "failure", "failed", "unauthorized", "denied"]
+        response_lower = response.text.lower()
+        
+        if response.status_code == 200 and not any(keyword in response_lower for keyword in error_keywords):
+            print(f"✅ OTP sent successfully to {phone_number} (Message ID: {response.text})")
+            return True
+        else:
+            print(f"❌ Failed to send OTP: {response.status_code} - {response.text}")
+            return False
+            
+    except Exception as e:
+        print(f"Error sending OTP via MSG91: {e}")
+        return False
 
 
 def get_homestay_by_id(homestay_id):
@@ -172,8 +233,12 @@ def signup():
         session['signup_name'] = name
         session['signup_phone'] = phone_number
         
-        # In production, send OTP via SMS - for now, display it
-        flash(f'OTP sent to {phone_number}. Your OTP: {otp}', 'info')
+        # Send OTP via MSG91
+        if send_otp_via_msg91(phone_number, otp):
+            flash(f'OTP sent to {phone_number}', 'success')
+        else:
+            flash(f'Failed to send OTP. Your OTP: {otp}', 'info')
+        
         return redirect(url_for('verify_signup_otp'))
     
     return render_template('signup.html')
@@ -234,8 +299,12 @@ def login():
                 session['login_phone'] = phone_number
                 session['login_user'] = user
                 
-                # In production, send OTP via SMS - for now, display it
-                flash(f'OTP sent to {phone_number}. Your OTP: {otp}', 'info')
+                # Send OTP via MSG91
+                if send_otp_via_msg91(phone_number, otp):
+                    flash(f'OTP sent to {phone_number}', 'success')
+                else:
+                    flash(f'Failed to send OTP. Your OTP: {otp}', 'info')
+                
                 return redirect(url_for('verify_login_otp'))
             else:
                 flash('Phone number not registered! Please sign up.', 'error')
@@ -253,6 +322,7 @@ def login():
             user = get_user_by_username(username)
             
             if user and user.get('password_hash') and check_password_hash(user['password_hash'], password):
+                session.permanent = True
                 session['username'] = username
                 session['name'] = user['name']
                 session['is_admin'] = user.get('is_admin', False)
@@ -283,6 +353,7 @@ def verify_login_otp():
         if otp == session.get('login_otp'):
             # OTP verified - login user
             user = session['login_user']
+            session.permanent = True
             session['phone_number'] = user['phone_number']
             session['name'] = user['name']
             session['is_admin'] = user.get('is_admin', False)

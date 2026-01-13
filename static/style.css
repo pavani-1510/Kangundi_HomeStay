@@ -974,3 +974,41 @@ main::before {
     animation: section-entrance 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
     animation-delay: 0.3s;
 }
+/* ===== Main Footer ===== */
+html {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.container {
+    flex: 1;
+}
+
+.main-footer {
+    background: linear-gradient(135deg, rgba(61, 53, 39, 0.95) 0%, rgba(107, 94, 76, 0.95) 100%);
+    backdrop-filter: blur(10px);
+    color: #f5f1e8;
+    text-align: center;
+    padding: 2rem 1rem;
+    margin-top: auto;
+    border-top: 1px solid rgba(217, 119, 6, 0.2);
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.1);
+}
+
+.main-footer p {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+}
+
+.main-footer p:hover {
+    opacity: 1;
+}

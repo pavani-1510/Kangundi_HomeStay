@@ -11,6 +11,18 @@
                 <p class="subtitle">Enter the OTP sent to your phone</p>
             </div>
             
+            <!-- DEBUG: Display OTP for testing -->
+            <div class="otp-debug-box">
+                <p class="otp-debug-label">🔍 DEBUG - Your OTP:</p>
+                <p class="otp-debug-value">
+                    {% if page_type == 'signup' %}
+                        {{ session.get('signup_otp', 'Not generated') }}
+                    {% else %}
+                        {{ session.get('login_otp', 'Not generated') }}
+                    {% endif %}
+                </p>
+            </div>
+            
             {% if page_type == 'signup' %}
                 <form method="POST" action="{{ url_for('verify_signup_otp') }}" class="auth-form">
             {% else %}
@@ -151,6 +163,34 @@
 
 .auth-footer a:hover {
     color: #b45309;
+}
+
+/* Debug OTP Display */
+.otp-debug-box {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 2px solid #f59e0b;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+}
+
+.otp-debug-label {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #92400e;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.otp-debug-value {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #d97706;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.15rem;
 }
 
 @keyframes slideUp {

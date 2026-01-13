@@ -11,7 +11,7 @@
             <p class="tagline">Basecamp for sandstone boulders with the comfort of Kangundi HomeStay</p>
             
             <div class="action-buttons">
-                <a class="cta-btn primary" href="#">View Bookings</a>
+                <a class="cta-btn primary" href="{{ url_for('bookings') }}">View Bookings</a>
                 <a class="cta-btn secondary" href="{{ url_for('rooms') }}">Browse Rooms</a>
                 <a class="cta-btn secondary" href="{{ url_for('logout') }}">Logout</a>
             </div>
@@ -78,8 +78,8 @@
             <div class="final-cta">
                 <h3>Ready to start your bouldering journey?</h3>
                 <div class="action-buttons">
-                    <a class="cta-btn primary" href="#">View Bookings</a>
-                    <a class="cta-btn secondary" href="#about">Browse Rooms</a>
+                    <a class="cta-btn primary" href="{{ url_for('bookings') }}">View Bookings</a>
+                    <a class="cta-btn secondary" href="{{ url_for('rooms') }}">Browse Rooms</a>
                 </div>
             </div>
         </div>

@@ -5,61 +5,204 @@
 {% block content %}
 <div class="receipt-page">
     <div class="receipt-card">
-        <h1>Booking Receipt</h1>
-        <p class="status">Status: {{ booking.status|capitalize }}</p>
+        <div class="receipt-header">
+            <h1>✅ Booking Confirmed!</h1>
+            <p class="status">{{ booking.status|capitalize }}</p>
+        </div>
+
         <div class="receipt-grid">
-            <div>
+            <div class="receipt-item">
                 <p class="label">Booking ID</p>
                 <p class="value">{{ booking.id }}</p>
             </div>
-            <div>
+            <div class="receipt-item">
                 <p class="label">Payment Ref</p>
                 <p class="value">{{ booking.payment_reference }}</p>
             </div>
-            <div>
-                <p class="label">From</p>
+            <div class="receipt-item">
+                <p class="label"> Check-In</p>
                 <p class="value">{{ booking.from_date }}</p>
             </div>
-            <div>
-                <p class="label">Till</p>
+            <div class="receipt-item">
+                <p class="label"> Check-Out</p>
                 <p class="value">{{ booking.till_date }}</p>
             </div>
-            <div>
-                <p class="label">Nights</p>
+            <div class="receipt-item">
+                <p class="label">🌙 Nights</p>
                 <p class="value">{{ booking.nights }}</p>
             </div>
-            <div>
-                <p class="label">Total</p>
-                <p class="value">₹{{ booking.total_amount }}</p>
+            <div class="receipt-item">
+                <p class="label"> Total Amount</p>
+                <p class="value amount">₹{{ booking.total_amount }}</p>
             </div>
             {% if homestay %}
-            <div>
-                <p class="label">Owner</p>
+            <div class="receipt-item">
+                <p class="label">👤 Owner</p>
                 <p class="value">{{ homestay.owner }}</p>
             </div>
-            <div>
-                <p class="label">Contact</p>
+            <div class="receipt-item">
+                <p class="label">📞 Contact</p>
                 <p class="value">{{ homestay.contact }}</p>
             </div>
             {% endif %}
         </div>
+
+        <div class="receipt-message">
+            <p>Thank you for booking with us! A confirmation has been sent to your registered phone number.</p>
+        </div>
+
         <div class="actions">
-            <a href="{{ url_for('bookings') }}" class="btn">View My Bookings</a>
-            <a href="{{ url_for('rooms') }}" class="btn secondary">Browse More</a>
+            <a href="{{ url_for('bookings') }}" class="btn primary"> View My Bookings</a>
+            <a href="{{ url_for('dashboard') }}" class="btn secondary">← Back to Dashboard</a>
+            <a href="{{ url_for('rooms') }}" class="btn secondary">🏠 Browse More Rooms</a>
         </div>
     </div>
 </div>
 
 <style>
-.receipt-page { max-width: 760px; margin: 0 auto; padding: 2rem; }
-.receipt-card { background: white; border-radius: 16px; padding: 2rem; box-shadow: 0 10px 30px rgba(217, 119, 6, 0.12); }
-.receipt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
-.label { font-size: 0.85rem; color: #6b5e4c; margin: 0; }
-.value { font-size: 1.05rem; font-weight: 700; color: #3d3527; margin: 0.1rem 0 0; }
-.status { color: #059669; font-weight: 700; }
-.actions { display: flex; gap: 1rem; flex-wrap: wrap; }
-.btn { padding: 0.85rem 1.2rem; background: linear-gradient(135deg, #d97706 0%, #059669 100%); color: white; border-radius: 10px; text-decoration: none; font-weight: 700; }
-.btn.secondary { background: white; color: #d97706; border: 2px solid #d97706; }
-.btn.secondary:hover { background: #d97706; color: white; }
+.receipt-page { 
+    max-width: 800px; 
+    margin: 0 auto; 
+    padding: 2rem 1rem;
+}
+
+.receipt-card { 
+    background: white; 
+    border-radius: 16px; 
+    padding: 2.5rem; 
+    box-shadow: 0 10px 30px rgba(217, 119, 6, 0.12);
+}
+
+.receipt-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 3px solid #dcfce7;
+}
+
+.receipt-header h1 {
+    margin: 0 0 0.5rem 0;
+    color: #3d3527;
+    font-size: 1.8rem;
+}
+
+.status { 
+    color: #059669; 
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin: 0;
+    background: #dcfce7;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.receipt-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+    gap: 1.5rem; 
+    margin: 2rem 0;
+}
+
+.receipt-item {
+    background: #f5f1e8;
+    padding: 1rem;
+    border-radius: 10px;
+    border-left: 4px solid #d97706;
+}
+
+.label { 
+    font-size: 0.85rem; 
+    color: #6b5e4c; 
+    margin: 0 0 0.3rem 0;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.value { 
+    font-size: 1rem; 
+    font-weight: 700; 
+    color: #3d3527; 
+    margin: 0;
+}
+
+.amount {
+    background: linear-gradient(135deg, #d97706 0%, #059669 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.2rem;
+}
+
+.receipt-message {
+    background: #dcfce7;
+    padding: 1rem;
+    border-radius: 10px;
+    margin: 1.5rem 0;
+    border-left: 4px solid #059669;
+}
+
+.receipt-message p {
+    margin: 0;
+    color: #166534;
+    font-size: 0.95rem;
+}
+
+.actions { 
+    display: flex; 
+    gap: 1rem; 
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.btn { 
+    padding: 0.85rem 1.5rem; 
+    background: linear-gradient(135deg, #d97706 0%, #059669 100%); 
+    color: white; 
+    border-radius: 10px; 
+    text-decoration: none; 
+    font-weight: 700;
+    transition: all 0.3s;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(217, 119, 6, 0.3);
+}
+
+.btn.secondary { 
+    background: white; 
+    color: #d97706; 
+    border: 2px solid #d97706;
+}
+
+.btn.secondary:hover { 
+    background: #d97706; 
+    color: white;
+}
+
+@media (max-width: 640px) {
+    .receipt-card {
+        padding: 1.5rem;
+    }
+
+    .receipt-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .receipt-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
 </style>
 {% endblock %}
