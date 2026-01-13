@@ -120,15 +120,9 @@
     <h1>✏️ Edit Homestay</h1>
 
     <form method="POST">
-        <div class="form-row">
-            <div class="form-group">
-                <label for="name">Homestay Name *</label>
-                <input type="text" id="name" name="name" required value="{{ homestay.name }}">
-            </div>
-            <div class="form-group">
-                <label for="owner">Owner Name *</label>
-                <input type="text" id="owner" name="owner" required value="{{ homestay.owner }}">
-            </div>
+        <div class="form-group">
+            <label for="owner">Owner Name *</label>
+            <input type="text" id="owner" name="owner" required value="{{ homestay.owner }}">
         </div>
 
         <div class="form-row">

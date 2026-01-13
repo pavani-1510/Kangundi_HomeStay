@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Booking Receipt - Kangundi{% endblock %}
+
+{% block content %}
+<div class="receipt-page">
+    <div class="receipt-card">
+        <h1>Booking Receipt</h1>
+        <p class="status">Status: {{ booking.status|capitalize }}</p>
+        <div class="receipt-grid">
+            <div>
+                <p class="label">Booking ID</p>
+                <p class="value">{{ booking.id }}</p>
+            </div>
+            <div>
+                <p class="label">Payment Ref</p>
+                <p class="value">{{ booking.payment_reference }}</p>
+            </div>
+            <div>
+                <p class="label">From</p>
+                <p class="value">{{ booking.from_date }}</p>
+            </div>
+            <div>
+                <p class="label">Till</p>
+                <p class="value">{{ booking.till_date }}</p>
+            </div>
+            <div>
+                <p class="label">Nights</p>
+                <p class="value">{{ booking.nights }}</p>
+            </div>
+            <div>
+                <p class="label">Total</p>
+                <p class="value">₹{{ booking.total_amount }}</p>
+            </div>
+            {% if homestay %}
+            <div>
+                <p class="label">Owner</p>
+                <p class="value">{{ homestay.owner }}</p>
+            </div>
+            <div>
+                <p class="label">Contact</p>
+                <p class="value">{{ homestay.contact }}</p>
+            </div>
+            {% endif %}
+        </div>
+        <div class="actions">
+            <a href="{{ url_for('bookings') }}" class="btn">View My Bookings</a>
+            <a href="{{ url_for('rooms') }}" class="btn secondary">Browse More</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.receipt-page { max-width: 760px; margin: 0 auto; padding: 2rem; }
+.receipt-card { background: white; border-radius: 16px; padding: 2rem; box-shadow: 0 10px 30px rgba(217, 119, 6, 0.12); }
+.receipt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+.label { font-size: 0.85rem; color: #6b5e4c; margin: 0; }
+.value { font-size: 1.05rem; font-weight: 700; color: #3d3527; margin: 0.1rem 0 0; }
+.status { color: #059669; font-weight: 700; }
+.actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+.btn { padding: 0.85rem 1.2rem; background: linear-gradient(135deg, #d97706 0%, #059669 100%); color: white; border-radius: 10px; text-decoration: none; font-weight: 700; }
+.btn.secondary { background: white; color: #d97706; border: 2px solid #d97706; }
+.btn.secondary:hover { background: #d97706; color: white; }
+</style>
+{% endblock %}

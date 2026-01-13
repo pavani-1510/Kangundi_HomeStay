@@ -14,9 +14,12 @@
                 <span>Kangundi HomeStay</span>
             </a>
             <div class="nav-links">
-                {% if session.get('username') %}
-                    <a  href="#">View Bookings</a>
-                    <a  href="#about">Browse Rooms</a>
+                {% if session.get('is_admin') %}
+                    <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                {% elif session.get('username') or session.get('phone_number') %}
+                    <a href="{{ url_for('bookings') }}">View Bookings</a>
+                    <a href="{{ url_for('rooms') }}">Browse Rooms</a>
                     <a href="{{ url_for('logout') }}">Logout</a>
                 {% else %}
                     <a href="{{ url_for('login') }}">Login</a>

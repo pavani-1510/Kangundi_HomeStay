@@ -146,7 +146,7 @@
 
 <div class="admin-container">
     <div class="admin-header">
-        <h1>🏠 Admin Dashboard</h1>
+        <h1>Admin Dashboard</h1>
         <a href="{{ url_for('admin_add_homestay') }}" class="admin-btn">+ Add Homestay</a>
     </div>
 
@@ -155,17 +155,13 @@
             <h3>Total Homestays</h3>
             <div class="number">{{ homestays|length }}</div>
         </div>
-        <div class="stat-card">
-            <h3>Admin User</h3>
-            <div class="number">{{ username }}</div>
-        </div>
+
     </div>
 
     {% if homestays|length > 0 %}
     <table class="homestays-table">
         <thead>
             <tr>
-                <th>Name</th>
                 <th>Owner</th>
                 <th>Rooms</th>
                 <th>Beds</th>
@@ -177,7 +173,6 @@
         <tbody>
             {% for homestay in homestays %}
             <tr>
-                <td><strong>{{ homestay.name }}</strong></td>
                 <td>{{ homestay.owner }}</td>
                 <td>{{ homestay.rooms }}</td>
                 <td>{{ homestay.beds }}</td>

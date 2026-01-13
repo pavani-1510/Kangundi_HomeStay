@@ -13,16 +13,16 @@
         {% for homestay in homestays %}
         <div class="homestay-card" data-animate="slide-up">
             <div class="homestay-image-wrapper">
-                <img src="{{ url_for('static', filename='images/' + homestay.image) }}" alt="{{ homestay.name }}" class="homestay-image">
+                <img src="{{ url_for('static', filename='images/' + homestay.image) }}" alt="Homestay image" class="homestay-image">
                 <div class="rating-badge">⭐ {{ homestay.rating }}</div>
             </div>
             
             <div class="homestay-content">
                 <div class="owner-info">
-                    <span class="owner-label">Owner:</span>
+                    <span class="owner-label">Owner</span>
                     <span class="owner-name">{{ homestay.owner }}</span>
                 </div>
-                
+
                 <div class="property-details">
                     <div class="detail-item">
                         <div>
@@ -150,28 +150,6 @@
     font-weight: 800;
     color: #3d3527;
     margin-bottom: 0.7rem;
-}
-
-.owner-info {
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(217, 119, 6, 0.1);
-}
-
-.owner-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #d97706;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    display: block;
-    margin-bottom: 0.3rem;
-}
-
-.owner-name {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #6b5e4c;
 }
 
 .property-details {
@@ -306,6 +284,27 @@
     .detail-value {
         font-size: 0.95rem;
     }
+}
+.owner-info {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(217, 119, 6, 0.1);
+}
+
+.owner-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #d97706;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+.owner-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #6b5e4c;
 }
 </style>
 {% endblock %}

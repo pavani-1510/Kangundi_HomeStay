@@ -2,3 +2,5 @@ Flask==3.0.0
 Werkzeug==3.0.1
 supabase>=2.0.0
 python-dotenv>=1.0.0
+cashfree-pg>=3.0.0
+requests>=2.31.0

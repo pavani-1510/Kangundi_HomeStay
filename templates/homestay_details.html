@@ -9,7 +9,7 @@
     <div class="details-container">
         <div class="details-image-section">
             <div class="main-image-wrapper">
-                <img src="{{ url_for('static', filename='images/' + homestay.images[0]) }}" alt="{{ homestay.name }}" class="main-image" id="mainImage">
+                <img src="{{ url_for('static', filename='images/' + homestay.images[0]) }}" alt="Homestay image" class="main-image" id="mainImage">
                 <div class="rating-overlay">
                     <span class="rating-star">⭐ {{ homestay.rating }}</span>
                 </div>
@@ -18,7 +18,7 @@
             <div class="thumbnail-gallery">
                 {% for image in homestay.images %}
                 <img src="{{ url_for('static', filename='images/' + image) }}" 
-                     alt="{{ homestay.name }}" 
+                     alt="Homestay image" 
                      class="thumbnail {% if loop.index0 == 0 %}active{% endif %}"
                      onclick="changeImage('{{ url_for('static', filename='images/' + image) }}', this)">
                 {% endfor %}
@@ -70,7 +70,7 @@
             </div>
             
             <div class="action-section">
-                <button class="book-now-btn">Book Now</button>
+                <a class="book-now-btn" href="{{ url_for('book_homestay', homestay_id=homestay.id) }}">Book Now</a>
             </div>
         </div>
     </div>

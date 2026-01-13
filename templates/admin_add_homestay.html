@@ -117,18 +117,12 @@
 </style>
 
 <div class="form-container">
-    <h1>➕ Add New Homestay</h1>
+    <h1>➕ Add Homestay</h1>
 
     <form method="POST">
-        <div class="form-row">
-            <div class="form-group">
-                <label for="name">Homestay Name *</label>
-                <input type="text" id="name" name="name" required placeholder="e.g., Mountain Vista HomeStay">
-            </div>
-            <div class="form-group">
-                <label for="owner">Owner Name *</label>
-                <input type="text" id="owner" name="owner" required placeholder="e.g., Rajesh Kumar">
-            </div>
+        <div class="form-group">
+            <label for="owner">Owner *</label>
+            <input type="text" id="owner" name="owner" required placeholder="Owner name">
         </div>
 
         <div class="form-row">
@@ -138,53 +132,53 @@
             </div>
             <div class="form-group">
                 <label for="beds">Beds *</label>
-                <input type="number" id="beds" name="beds" required min="1" placeholder="6">
+                <input type="number" id="beds" name="beds" required min="1" placeholder="4">
             </div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
                 <label for="floor">Floor</label>
-                <input type="text" id="floor" name="floor" placeholder="e.g., Ground Floor, 1st Floor">
+                <input type="text" id="floor" name="floor" placeholder="Ground">
             </div>
             <div class="form-group">
                 <label for="price">Price (₹) *</label>
-                <input type="number" id="price" name="price" required min="0" placeholder="1500">
+                <input type="number" id="price" name="price" required min="0" placeholder="2500">
             </div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
                 <label for="rating">Rating (0-5) *</label>
-                <input type="number" id="rating" name="rating" required step="0.1" min="0" max="5" value="4.5" placeholder="4.5">
+                <input type="number" id="rating" name="rating" required step="0.1" min="0" max="5" placeholder="4.5">
             </div>
             <div class="form-group">
                 <label for="reviews">Number of Reviews</label>
-                <input type="number" id="reviews" name="reviews" min="0" value="0" placeholder="0">
+                <input type="number" id="reviews" name="reviews" min="0" placeholder="0">
             </div>
         </div>
 
         <div class="form-group">
-            <label for="image">Main Image URL *</label>
-            <input type="text" id="image" name="image" required placeholder="/static/images/image.jpg">
-            <div class="help-text">URL to the main homestay image</div>
+            <label for="image">Main Image File Name *</label>
+            <input type="text" id="image" name="image" required placeholder="image.jpg">
+            <div class="help-text">File name relative to static/images/ (e.g., image.jpg)</div>
         </div>
 
         <div class="form-group">
-            <label for="images">Additional Image URLs</label>
-            <input type="text" id="images" name="images" placeholder="/static/images/image.jpg, /static/images/logo.jpg">
-            <div class="help-text">Separate multiple URLs with commas</div>
+            <label for="images">Additional Image File Names</label>
+            <input type="text" id="images" name="images" placeholder="image2.jpg, image3.jpg">
+            <div class="help-text">Separate multiple file names with commas</div>
         </div>
 
         <div class="form-group">
             <label for="features">Features (comma-separated) *</label>
-            <input type="text" id="features" name="features" required placeholder="Geyser, AC, WiFi, Kitchen, Parking">
+            <input type="text" id="features" name="features" required placeholder="WiFi, Parking, Breakfast">
             <div class="help-text">Enter features separated by commas</div>
         </div>
 
         <div class="form-group">
             <label for="description">Description *</label>
-            <textarea id="description" name="description" required placeholder="Describe this homestay..."></textarea>
+            <textarea id="description" name="description" required placeholder="Describe the homestay..."></textarea>
         </div>
 
         <div class="form-group">
@@ -192,7 +186,7 @@
             <input type="tel" id="contact" name="contact" required placeholder="+91-9876543210">
         </div>
 
-        <button type="submit" class="btn-submit">✨ Add Homestay</button>
+        <button type="submit" class="btn-submit">💾 Add Homestay</button>
     </form>
 
     <a href="{{ url_for('admin_dashboard') }}" class="back-link">← Back to Dashboard</a>

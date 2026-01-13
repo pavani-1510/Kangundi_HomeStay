@@ -1,35 +1,37 @@
 {% extends "base.html" %}
 
-{% block title %}Sign Up - Kangundi HomeStay{% endblock %}
+{% block title %}Verify OTP - Kangundi HomeStay{% endblock %}
 
 {% block content %}
 <div class="auth-page">
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <h1>Create Account</h1>
-                <p class="subtitle">Start your climbing adventure with us</p>
+                <h1>Verify OTP</h1>
+                <p class="subtitle">Enter the OTP sent to your phone</p>
             </div>
             
-            <form method="POST" action="{{ url_for('signup') }}" class="auth-form">
+            {% if page_type == 'signup' %}
+                <form method="POST" action="{{ url_for('verify_signup_otp') }}" class="auth-form">
+            {% else %}
+                <form method="POST" action="{{ url_for('verify_login_otp') }}" class="auth-form">
+            {% endif %}
                 <div class="form-group">
-                    <label for="name">Full Name</label>
-                    <input type="text" id="name" name="name" required 
-                           placeholder="Enter your full name" autocomplete="name">
+                    <label for="otp">OTP Code</label>
+                    <input type="text" id="otp" name="otp" required 
+                           placeholder="Enter 6-digit OTP" autocomplete="off"
+                           maxlength="6" pattern="[0-9]{6}">
                 </div>
                 
-                <div class="form-group">
-                    <label for="phone_number">Phone Number</label>
-                    <input type="tel" id="phone_number" name="phone_number" required 
-                           placeholder="+91-9876543210" autocomplete="tel"
-                           pattern="[0-9+\-\s]{10,15}">
-                </div>
-                
-                <button type="submit" class="auth-btn">Continue</button>
+                <button type="submit" class="auth-btn">Verify OTP</button>
             </form>
             
             <p class="auth-footer">
-                Already have an account? <a href="{{ url_for('login') }}">Login here</a>
+                {% if page_type == 'signup' %}
+                    <a href="{{ url_for('signup') }}">Back to signup</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Back to login</a>
+                {% endif %}
             </p>
         </div>
     </div>
@@ -93,41 +95,38 @@
 
 .form-group label {
     font-weight: 600;
+    color: #333;
     font-size: 0.9rem;
-    color: #3d3527;
-    letter-spacing: 0.3px;
 }
 
 .form-group input {
-    padding: 0.9rem 1.2rem;
-    border: 2px solid rgba(217, 119, 6, 0.2);
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
     border-radius: 10px;
-    font-size: 0.95rem;
+    font-size: 1.2rem;
+    font-family: monospace;
+    text-align: center;
+    letter-spacing: 0.5rem;
+    font-weight: 600;
     transition: all 0.3s ease;
-    background: #f9f9f9;
 }
 
 .form-group input:focus {
     outline: none;
     border-color: #d97706;
-    background: white;
-    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.1);
-}
-
-.form-group input::placeholder {
-    color: #aaa;
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
 }
 
 .auth-btn {
-    padding: 1rem 2rem;
-    background: linear-gradient(135deg, #d97706 0%, #059669 100%);
+    padding: 0.85rem 1.5rem;
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
     color: white;
     border: none;
-    border-radius: 12px;
-    font-weight: 700;
+    border-radius: 10px;
     font-size: 1rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.3s ease;
     margin-top: 0.5rem;
 }
 
@@ -136,14 +135,10 @@
     box-shadow: 0 10px 30px rgba(217, 119, 6, 0.3);
 }
 
-.auth-btn:active {
-    transform: translateY(0);
-}
-
 .auth-footer {
     text-align: center;
     margin-top: 2rem;
-    color: #6b5e4c;
+    color: #6b7280;
     font-size: 0.9rem;
 }
 
@@ -156,16 +151,26 @@
 
 .auth-footer a:hover {
     color: #b45309;
-    text-decoration: underline;
 }
 
-@media (max-width: 480px) {
-    .auth-card {
-        padding: 2rem 1.5rem;
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
     }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
+@media (max-width: 640px) {
+    .auth-card {
+        padding: 2rem;
+    }
+    
     .auth-header h1 {
-        font-size: 1.6rem;
+        font-size: 1.5rem;
     }
 }
 </style>

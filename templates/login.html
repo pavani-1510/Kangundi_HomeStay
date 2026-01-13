@@ -11,27 +11,39 @@
                 <p class="subtitle">Login to continue your adventure</p>
             </div>
             
-            <form method="POST" action="{{ url_for('login') }}" class="auth-form">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required 
-                           placeholder="Enter your username" autocomplete="username">
+            <form method="POST" action="{{ url_for('login') }}" class="auth-form" id="loginForm">
+                <div class="login-tabs">
+                    <button type="button" class="tab-btn active" data-type="phone">Phone + OTP</button>
+                    <button type="button" class="tab-btn" data-type="username">Username</button>
                 </div>
                 
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required 
-                           placeholder="Enter your password" autocomplete="current-password">
+                <input type="hidden" id="loginType" name="login_type" value="phone">
+                
+                <!-- Phone Login -->
+                <div id="phoneLogin" class="login-section active">
+                    <div class="form-group">
+                        <label for="phone_number">Phone Number</label>
+                        <input type="tel" id="phone_number" name="phone_number" 
+                               placeholder="+91-9876543210" autocomplete="tel"
+                               pattern="[0-9+\-\s]{10,15}">
+                    </div>
+                    <button type="submit" class="auth-btn">Send OTP</button>
                 </div>
                 
-                <div class="form-group-checkbox">
-                    <label class="checkbox-label">
-                        <input type="checkbox" name="remember" value="true">
-                        <span>Remember me</span>
-                    </label>
+                <!-- Username Login -->
+                <div id="usernameLogin" class="login-section">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" 
+                               placeholder="Enter username" autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" 
+                               placeholder="Enter password" autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="auth-btn">Login</button>
                 </div>
-                
-                <button type="submit" class="auth-btn">Login</button>
             </form>
             
             <p class="auth-footer">
@@ -196,5 +208,94 @@
         font-size: 1.6rem;
     }
 }
+
+.login-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 0.75rem;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #999;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    margin-bottom: -2px;
+}
+
+.tab-btn.active {
+    color: #d97706;
+    border-bottom-color: #d97706;
+}
+
+.tab-btn:hover {
+    color: #b45309;
+}
+
+.login-section {
+    display: none;
+}
+
+.login-section.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const loginForm = document.getElementById('loginForm');
+    const loginType = document.getElementById('loginType');
+    
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const type = this.getAttribute('data-type');
+            
+            // Update active tab
+            tabBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Update login type
+            loginType.value = type;
+            
+            // Show/hide sections
+            document.getElementById('phoneLogin').classList.remove('active');
+            document.getElementById('usernameLogin').classList.remove('active');
+            
+            if (type === 'phone') {
+                document.getElementById('phoneLogin').classList.add('active');
+                document.getElementById('phone_number').focus();
+                // Clear username/password
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+            } else {
+                document.getElementById('usernameLogin').classList.add('active');
+                document.getElementById('username').focus();
+                // Clear phone
+                document.getElementById('phone_number').value = '';
+            }
+        });
+    });
+});
+</script>
+
+
 {% endblock %}
