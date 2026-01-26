@@ -12,38 +12,23 @@
             </div>
             
             <form method="POST" action="{{ url_for('login') }}" class="auth-form" id="loginForm">
-                <div class="login-tabs">
-                    <button type="button" class="tab-btn active" data-type="phone">Phone + OTP</button>
-                    <button type="button" class="tab-btn" data-type="username">Username</button>
+                <div class="form-group">
+                    <label for="identifier">Phone Number or Email</label>
+                    <input type="text" id="identifier" name="identifier" 
+                           placeholder="Enter phone number or email" 
+                           autocomplete="username" required>
                 </div>
                 
-                <input type="hidden" id="loginType" name="login_type" value="phone">
-                
-                <!-- Phone Login -->
-                <div id="phoneLogin" class="login-section active">
-                    <div class="form-group">
-                        <label for="phone_number">Phone Number</label>
-                        <input type="tel" id="phone_number" name="phone_number" 
-                               placeholder="+91-9876543210" autocomplete="tel"
-                               pattern="[0-9+\-\s]{10,15}">
-                    </div>
-                    <button type="submit" class="auth-btn">Send OTP</button>
+                <!-- Password field (shown only for email) -->
+                <div class="form-group" id="passwordGroup" style="display: none;">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" 
+                           placeholder="Enter your password" autocomplete="current-password">
                 </div>
                 
-                <!-- Username Login -->
-                <div id="usernameLogin" class="login-section">
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" 
-                               placeholder="Enter username" autocomplete="username">
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" 
-                               placeholder="Enter password" autocomplete="current-password">
-                    </div>
-                    <button type="submit" class="auth-btn">Login</button>
-                </div>
+                <button type="submit" class="auth-btn" id="submitBtn">
+                    <span class="btn-icon">📱</span> <span id="btnText">Login</span>
+                </button>
             </form>
             
             <p class="auth-footer">
@@ -211,33 +196,34 @@
 
 .login-tabs {
     display: flex;
-    gap: 1rem;
+    gap: 0.5rem;
     margin-bottom: 1.5rem;
-    border-bottom: 2px solid #e5e7eb;
+    background: #f3f4f6;
+    padding: 0.4rem;
+    border-radius: 12px;
 }
 
 .tab-btn {
     flex: 1;
-    padding: 0.75rem;
+    padding: 0.75rem 1rem;
     background: none;
     border: none;
-    border-bottom: 3px solid transparent;
-    color: #999;
+    color: #6b7280;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    position: relative;
-    margin-bottom: -2px;
+    border-radius: 8px;
 }
 
 .tab-btn.active {
+    background: white;
     color: #d97706;
-    border-bottom-color: #d97706;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.tab-btn:hover {
-    color: #b45309;
+.tab-btn:hover:not(.active) {
+    color: #d97706;
 }
 
 .login-section {
@@ -249,50 +235,84 @@
     animation: fadeIn 0.3s ease;
 }
 
+.login-hint {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #9ca3af;
+    margin-top: 1rem;
+    margin-bottom: 0;
+}
+
+.form-hint {
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-weight: 400;
+    margin-top: 0.25rem;
+}
+
+.btn-icon {
+    margin-right: 0.5rem;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
+        transform: translateY(-10px);
     }
     to {
         opacity: 1;
+        transform: translateY(0);
     }
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const loginForm = document.getElementById('loginForm');
-    const loginType = document.getElementById('loginType');
+    const identifierInput = document.getElementById('identifier');
+    const passwordGroup = document.getElementById('passwordGroup');
+    const passwordInput = document.getElementById('password');
+    const submitBtn = document.getElementById('submitBtn');
+    const btnIcon = submitBtn.querySelector('.btn-icon');
+    const btnText = document.getElementById('btnText');
     
-    tabBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const type = this.getAttribute('data-type');
-            
-            // Update active tab
-            tabBtns.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Update login type
-            loginType.value = type;
-            
-            // Show/hide sections
-            document.getElementById('phoneLogin').classList.remove('active');
-            document.getElementById('usernameLogin').classList.remove('active');
-            
-            if (type === 'phone') {
-                document.getElementById('phoneLogin').classList.add('active');
-                document.getElementById('phone_number').focus();
-                // Clear username/password
-                document.getElementById('username').value = '';
-                document.getElementById('password').value = '';
-            } else {
-                document.getElementById('usernameLogin').classList.add('active');
-                document.getElementById('username').focus();
-                // Clear phone
-                document.getElementById('phone_number').value = '';
+    identifierInput.addEventListener('input', function() {
+        const value = this.value.trim();
+        
+        // If contains @, it's an email - show password field
+        if (value.includes('@')) {
+            passwordGroup.style.display = 'block';
+            passwordInput.required = true;
+            btnIcon.textContent = '🔐';
+            btnText.textContent = 'Login';
+        } else {
+            // Phone number - hide password field
+            passwordGroup.style.display = 'none';
+            passwordInput.required = false;
+            passwordInput.value = '';
+            btnIcon.textContent = '📱';
+            btnText.textContent = 'Login';
+        }
+    });
+    
+    // Form validation
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const identifier = identifierInput.value.trim();
+        
+        if (!identifier) {
+            e.preventDefault();
+            alert('Please enter your phone number or email');
+            return;
+        }
+        
+        // If email, require password
+        if (identifier.includes('@')) {
+            const password = passwordInput.value;
+            if (!password) {
+                e.preventDefault();
+                alert('Please enter your password');
+                return;
             }
-        });
+        }
     });
 });
 </script>

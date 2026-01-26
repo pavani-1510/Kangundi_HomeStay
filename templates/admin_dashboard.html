@@ -155,9 +155,55 @@
             <h3>Total Homestays</h3>
             <div class="number">{{ homestays|length }}</div>
         </div>
-
+        <div class="stat-card">
+            <h3>Total Bookings</h3>
+            <div class="number">{{ bookings|length }}</div>
+        </div>
     </div>
 
+    <!-- Bookings Section -->
+    <h2 style="margin: 40px 0 20px 0; color: #3d3527;">All Bookings</h2>
+    {% if bookings|length > 0 %}
+    <table class="homestays-table" style="margin-bottom: 40px;">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Owner</th>
+                <th>Rooms</th>
+                <th>Beds</th>
+                <th>Price</th>
+                <th>Contact</th>
+                <th>From Date</th>
+                <th>Till Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in bookings %}
+            <tr>
+                <td>{{ booking.user_name }}</td>
+                {% if booking.homestay %}
+                <td>{{ booking.homestay.owner }}</td>
+                <td>{{ booking.homestay.rooms }}</td>
+                <td>{{ booking.homestay.beds }}</td>
+                <td>₹{{ booking.homestay.price }}</td>
+                <td>{{ booking.homestay.contact }}</td>
+                {% else %}
+                <td colspan="5" style="color: #dc2626;">Homestay details unavailable</td>
+                {% endif %}
+                <td>{{ booking.from_date }}</td>
+                <td>{{ booking.till_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-message">
+        <p>No bookings yet.</p>
+    </div>
+    {% endif %}
+
+    <!-- Homestays Section -->
+    <h2 style="margin: 40px 0 20px 0; color: #3d3527;">Homestays</h2>
     {% if homestays|length > 0 %}
     <table class="homestays-table">
         <thead>
@@ -166,7 +212,6 @@
                 <th>Rooms</th>
                 <th>Beds</th>
                 <th>Price</th>
-                <th>Rating</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -177,7 +222,6 @@
                 <td>{{ homestay.rooms }}</td>
                 <td>{{ homestay.beds }}</td>
                 <td>₹{{ homestay.price }}</td>
-                <td>⭐ {{ homestay.rating }}</td>
                 <td>
                     <div class="action-buttons">
                         <a href="{{ url_for('admin_edit_homestay', homestay_id=homestay.id) }}" class="btn-edit">Edit</a>

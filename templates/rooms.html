@@ -12,11 +12,6 @@
     <div class="homestays-grid">
         {% for homestay in homestays %}
         <div class="homestay-card" data-animate="slide-up">
-            <div class="homestay-image-wrapper">
-                <img src="{{ url_for('static', filename='images/' + homestay.image) }}" alt="Homestay image" class="homestay-image">
-                <div class="rating-badge">⭐ {{ homestay.rating }}</div>
-            </div>
-            
             <div class="homestay-content">
                 <div class="owner-info">
                     <span class="owner-label">Owner</span>
@@ -36,15 +31,6 @@
                             <p class="detail-label">Beds</p>
                             <p class="detail-value">{{ homestay.beds }}</p>
                         </div>
-                    </div>
-                </div>
-                
-                <div class="features-section">
-                    <p class="features-label">Features:</p>
-                    <div class="features-list">
-                        {% for feature in homestay.features %}
-                        <span class="feature-tag">{{ feature }}</span>
-                        {% endfor %}
                     </div>
                 </div>
                 

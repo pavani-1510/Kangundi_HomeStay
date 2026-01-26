@@ -147,35 +147,6 @@
             </div>
         </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label for="rating">Rating (0-5) *</label>
-                <input type="number" id="rating" name="rating" required step="0.1" min="0" max="5" value="{{ homestay.rating }}">
-            </div>
-            <div class="form-group">
-                <label for="reviews">Number of Reviews</label>
-                <input type="number" id="reviews" name="reviews" min="0" value="{{ homestay.reviews or 0 }}">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="image">Main Image URL *</label>
-            <input type="text" id="image" name="image" required value="{{ homestay.image }}">
-            <div class="help-text">URL to the main homestay image</div>
-        </div>
-
-        <div class="form-group">
-            <label for="images">Additional Image URLs</label>
-            <input type="text" id="images" name="images" value="{% if homestay.images %}{{ homestay.images|join(', ') }}{% endif %}">
-            <div class="help-text">Separate multiple URLs with commas</div>
-        </div>
-
-        <div class="form-group">
-            <label for="features">Features (comma-separated) *</label>
-            <input type="text" id="features" name="features" required value="{% if homestay.features %}{{ homestay.features|join(', ') }}{% endif %}">
-            <div class="help-text">Enter features separated by commas</div>
-        </div>
-
         <div class="form-group">
             <label for="description">Description *</label>
             <textarea id="description" name="description" required>{{ homestay.description }}</textarea>

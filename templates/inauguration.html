@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kangundi HomeStay - Grand Inauguration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #d97706 0%, #059669 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .inauguration-container {
+            text-align: center;
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideInUp 0.8s ease-out;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .inauguration-header {
+            margin-bottom: 30px;
+        }
+
+        .inauguration-header h1 {
+            font-size: 3rem;
+            color: #d97706;
+            margin-bottom: 10px;
+            animation: fadeInScale 0.8s ease-out;
+        }
+
+        .inauguration-header p {
+            font-size: 1.2rem;
+            color: #6b5e4c;
+            margin-bottom: 20px;
+        }
+
+        .inauguration-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .inauguration-content {
+            margin: 40px 0;
+            line-height: 1.8;
+        }
+
+        .inauguration-content h2 {
+            font-size: 1.8rem;
+            color: #3d3527;
+            margin-bottom: 15px;
+        }
+
+        .inauguration-content p {
+            font-size: 1.05rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .highlights-inauguration {
+            display: flex;
+            justify-content: space-around;
+            margin: 40px 0;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .highlight-box {
+            background: #f5f1e8;
+            padding: 20px;
+            border-radius: 10px;
+            flex: 1;
+            min-width: 120px;
+            border-left: 4px solid #d97706;
+            animation: slideInUp 0.8s ease-out;
+        }
+
+        .highlight-box:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .highlight-box:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .highlight-box h3 {
+            color: #d97706;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .highlight-box p {
+            font-size: 0.95rem;
+            color: #666;
+            margin: 0;
+        }
+
+        .inauguration-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #d97706 0%, #059669 100%);
+            color: white;
+            padding: 18px 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-decoration: none;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 30px;
+            box-shadow: 0 10px 25px rgba(217, 119, 6, 0.3);
+            animation: slideInUp 0.8s ease-out 0.3s backwards;
+        }
+
+        .inauguration-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(217, 119, 6, 0.4);
+        }
+
+        .inauguration-button:active {
+            transform: translateY(-1px);
+        }
+
+        .inauguration-footer {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #e8dcc8;
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #d97706;
+            animation: confettiFall 3s ease-in forwards;
+            pointer-events: none;
+        }
+
+        @keyframes confettiFall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .inauguration-container {
+                padding: 40px 20px;
+            }
+
+            .inauguration-header h1 {
+                font-size: 2rem;
+            }
+
+            .inauguration-content h2 {
+                font-size: 1.4rem;
+            }
+
+            .highlights-inauguration {
+                flex-direction: column;
+            }
+
+            .highlight-box {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="inauguration-container">
+        <div class="inauguration-header">
+            <div class="inauguration-icon">🏛️</div>
+            <h1>Kangundi HomeStay</h1>
+            <p>Grand Inauguration</p>
+        </div>
+
+        <div class="inauguration-content">
+            <h2>Welcome to a 900-Year Heritage</h2>
+            <p>Experience the ancient estate of Kangundi—where centuries of culture, history, and hospitality await you. From prehistoric rock paintings to Chola temples, from the legendary Kangundi Plays to world-class bouldering, Kangundi is where heritage meets adventure.</p>
+
+            <div class="highlights-inauguration">
+                <div class="highlight-box">
+                    <h3>🏛️ Heritage</h3>
+                    <p>900+ years of documented history</p>
+                </div>
+                <div class="highlight-box">
+                    <h3>🧗 Adventure</h3>
+                    <p>World-class bouldering</p>
+                </div>
+                <div class="highlight-box">
+                    <h3>🏠 Comfort</h3>
+                    <p>Authentic hospitality</p>
+                </div>
+            </div>
+
+            <p><strong>Join us in celebrating the grand inauguration of Kangundi HomeStay and step into a living legacy.</strong></p>
+        </div>
+
+        <form method="POST" action="{{ url_for('inauguration_login') }}" style="display: inline;">
+            <button type="submit" class="inauguration-button">Begin Your Journey →</button>
+        </form>
+
+        <div class="inauguration-footer">
+            <p>The heritage of Kangundi awaits. Explore, experience, and embrace the culture of a 900-year-old estate.</p>
+        </div>
+    </div>
+
+    <script>
+        // Create confetti effect on page load
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.background = ['#d97706', '#059669', '#f59e0b', '#10b981'][Math.floor(Math.random() * 4)];
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        // Create confetti when button is clicked
+        document.querySelector('.inauguration-button').addEventListener('click', createConfetti);
+
+        // Also show confetti on page load
+        window.addEventListener('load', () => {
+            setTimeout(createConfetti, 500);
+        });
+    </script>
+</body>
+</html>

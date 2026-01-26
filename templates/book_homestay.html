@@ -10,10 +10,10 @@
             <h1>Reserve Your Stay</h1>
             <p class="sub">Owner: {{ homestay.owner }}</p>
             <p class="sub">Price: ₹{{ homestay.price }} / night</p>
-            <p class="sub">Rooms: {{ homestay.rooms }} · Beds: {{ homestay.beds }}</p>
+            <p class="sub">Rooms: {{ homestay.rooms }} · Total Beds: {{ homestay.beds }}</p>
         </div>
 
-        <form method="POST" class="booking-form">
+        <form method="POST" class="booking-form" onchange="updateAvailability()">
             <div class="form-row">
                 <div class="form-group">
                     <label for="from_date">From date *</label>
@@ -24,10 +24,97 @@
                     <input type="date" id="till_date" name="till_date" required>
                 </div>
             </div>
-            <button type="submit" class="primary-btn">Continue to Payment</button>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="beds_requested">Number of Beds *</label>
+                    <select id="beds_requested" name="beds_requested" required>
+                        <option value="">Select beds</option>
+                        {% for i in range(1, homestay.beds + 1) %}
+                        <option value="{{ i }}">{{ i }} bed{{ 's' if i > 1 else '' }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Availability</label>
+                    <div id="availability-info" class="availability-info">
+                        Select dates to check availability
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="primary-btn" id="submit-btn" disabled>Continue to Payment</button>
         </form>
     </div>
 </div>
+
+<script>
+const availabilityData = {{ availability | tojson }};
+const totalBeds = {{ homestay.beds }};
+
+function updateAvailability() {
+    const fromDate = document.getElementById('from_date').value;
+    const tillDate = document.getElementById('till_date').value;
+    const bedsRequested = parseInt(document.getElementById('beds_requested').value) || 0;
+    const availabilityInfo = document.getElementById('availability-info');
+    const submitBtn = document.getElementById('submit-btn');
+
+    if (!fromDate || !tillDate) {
+        availabilityInfo.textContent = 'Select dates to check availability';
+        submitBtn.disabled = true;
+        return;
+    }
+
+    if (new Date(tillDate) <= new Date(fromDate)) {
+        availabilityInfo.innerHTML = '<span class="error">Till date must be after from date</span>';
+        submitBtn.disabled = true;
+        return;
+    }
+
+    if (bedsRequested === 0) {
+        availabilityInfo.textContent = 'Select number of beds';
+        submitBtn.disabled = true;
+        return;
+    }
+
+    // Check availability for the date range
+    let minAvailable = totalBeds;
+    let currentDate = new Date(fromDate);
+    const endDate = new Date(tillDate);
+    let hasFullyBookedDay = false;
+
+    while (currentDate < endDate) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        const dayInfo = availabilityData[dateStr];
+        
+        if (dayInfo) {
+            if (dayInfo.is_fully_booked) {
+                hasFullyBookedDay = true;
+            }
+            minAvailable = Math.min(minAvailable, dayInfo.available);
+        }
+        
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // Display availability status
+    if (hasFullyBookedDay) {
+        availabilityInfo.innerHTML = '<span class="unavailable">⚠️ Fully Booked</span>';
+        submitBtn.disabled = true;
+    } else if (bedsRequested > minAvailable) {
+        availabilityInfo.innerHTML = `<span class="unavailable">❌ Only ${minAvailable} bed(s) available</span>`;
+        submitBtn.disabled = true;
+    } else {
+        availabilityInfo.innerHTML = `<span class="available">✓ ${minAvailable} bed(s) available</span>`;
+        submitBtn.disabled = false;
+    }
+}
+
+// Set min date to today
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('from_date').min = today;
+document.getElementById('till_date').min = today;
+</script>
 
 <style>
 .booking-page {
@@ -72,12 +159,51 @@
     display: block;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
     width: 100%;
     padding: 0.8rem 1rem;
     border: 2px solid #e8dcc8;
     border-radius: 10px;
     font-size: 1rem;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #d97706;
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+}
+
+.availability-info {
+    padding: 1rem;
+    border-radius: 10px;
+    background: #f5f1e8;
+    font-weight: 600;
+    text-align: center;
+    min-height: 3.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.availability-info.available {
+    color: #059669;
+}
+
+.availability-info .available {
+    color: #059669;
+    font-weight: 700;
+}
+
+.availability-info .unavailable {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.availability-info .error {
+    color: #dc2626;
 }
 
 .primary-btn {
@@ -91,9 +217,14 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.primary-btn:hover {
+.primary-btn:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(217, 119, 6, 0.25);
+}
+
+.primary-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 @media (max-width: 640px) {

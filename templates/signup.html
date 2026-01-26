@@ -11,7 +11,7 @@
                 <p class="subtitle">Start your climbing adventure with us</p>
             </div>
             
-            <form method="POST" action="{{ url_for('signup') }}" class="auth-form">
+            <form method="POST" action="{{ url_for('signup') }}" class="auth-form" id="signupForm">
                 <div class="form-group">
                     <label for="name">Full Name</label>
                     <input type="text" id="name" name="name" required 
@@ -21,11 +21,14 @@
                 <div class="form-group">
                     <label for="phone_number">Phone Number</label>
                     <input type="tel" id="phone_number" name="phone_number" required 
-                           placeholder="+91-9876543210" autocomplete="tel"
+                           placeholder="xxxxxxxxxx" autocomplete="tel"
                            pattern="[0-9+\-\s]{10,15}">
+                    <small class="form-hint">We'll send an OTP to verify your number</small>
                 </div>
                 
-                <button type="submit" class="auth-btn">Continue</button>
+                <button type="submit" class="auth-btn">
+                    <span class="btn-icon">🚀</span> Create Account
+                </button>
             </form>
             
             <p class="auth-footer">
@@ -116,6 +119,17 @@
 
 .form-group input::placeholder {
     color: #aaa;
+}
+
+.form-hint {
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-weight: 400;
+    margin-top: 0.25rem;
+}
+
+.btn-icon {
+    margin-right: 0.5rem;
 }
 
 .auth-btn {

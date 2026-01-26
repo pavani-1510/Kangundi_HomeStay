@@ -12,7 +12,7 @@
             <p class="tagline">Experience the heritage of a 900-year-old Zamindari estate</p>
             
             <div class="action-buttons">
-                {% if session.get('user_id') %}
+                {% if session.get('username') or session.get('phone_number') %}
                     <a class="cta-btn primary" href="{{ url_for('rooms') }}">Browse Rooms</a>
                     <a class="cta-btn secondary" href="{{ url_for('bookings') }}">My Bookings</a>
                 {% else %}

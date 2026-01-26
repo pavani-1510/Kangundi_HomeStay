@@ -6,7 +6,7 @@
 <div class="bookings-page">
     <div class="bookings-header">
         <h1> My Bookings</h1>
-        <a href="{{ url_for('dashboard') }}" class="btn-back">← Back to Dashboard</a>
+        <a href="{{ url_for('home') }}" class="btn-back">← Back to Dashboard</a>
     </div>
 
     {% if bookings %}
@@ -14,23 +14,33 @@
         {% for booking in bookings %}
         <div class="booking-card">
             <div class="booking-content">
+                {% if booking.homestay %}
                 <div class="booking-item">
-                    <p class="label"> Dates</p>
-                    <p class="value">{{ booking.from_date }} → {{ booking.till_date }}</p>
-                    <p class="nights">{{ booking.nights }} nights</p>
+                    <p class="label">🏠 Owner</p>
+                    <p class="value">{{ booking.homestay.owner }}</p>
                 </div>
                 <div class="booking-item">
-                    <p class="label"> Total Amount</p>
-                    <p class="value amount">₹{{ booking.total_amount }}</p>
+                    <p class="label">🚪 Rooms</p>
+                    <p class="value">{{ booking.homestay.rooms }}</p>
                 </div>
                 <div class="booking-item">
-                    <p class="label">✓ Status</p>
-                    <p class="value status paid">{{ booking.status|capitalize }}</p>
+                    <p class="label">🛏️ Beds</p>
+                    <p class="value">{{ booking.homestay.beds }}</p>
                 </div>
                 <div class="booking-item">
-                    <p class="label"> Ref ID</p>
-                    <p class="value">{{ booking.payment_reference }}</p>
+                    <p class="label">💰 Price</p>
+                    <p class="value amount">₹{{ booking.homestay.price }}</p>
                 </div>
+                <div class="booking-item">
+                    <p class="label">📞 Contact</p>
+                    <p class="value">{{ booking.homestay.contact }}</p>
+                </div>
+                {% else %}
+                <div class="booking-item">
+                    <p class="label">⚠️ Status</p>
+                    <p class="value">Homestay details unavailable</p>
+                </div>
+                {% endif %}
             </div>
             <div class="booking-actions">
                 <a href="{{ url_for('receipt', booking_id=booking.id) }}" class="btn-receipt">View Receipt →</a>
