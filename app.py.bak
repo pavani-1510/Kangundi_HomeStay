@@ -45,48 +45,21 @@ CASHFREE_BASE_URL = os.getenv('CASHFREE_BASE_URL', 'https://sandbox.cashfree.com
 
 # MSG91 Configuration for SMS OTP
 MSG91_AUTH_KEY = os.getenv('MSG91_AUTH_KEY', '')
-MSG91_TEMPLATE_ID = os.getenv('MSG91_TEMPLATE_ID', '')
 MSG91_SENDER_ID = os.getenv('MSG91_SENDER_ID', 'KANGND')  # 6 characters max
+MSG91_DLT_TE_ID = os.getenv('MSG91_DLT_TE_ID', '')  # DLT Template Entity ID
+MSG91_DLT_TE_ID = os.getenv('MSG91_DLT_TE_ID', '')  # DLT Template Entity ID
 
 # Helper functions for database operations
 def get_user_by_phone(phone_number):
-    """Get user by phone number"""
-    try:
-        response = supabase.table('users').select('*').eq('phone_number', phone_number).execute()
-        if response.data and len(response.data) > 0:
-            return response.data[0]
-        return None
-    except Exception as e:
-        print(f"Error getting user by phone: {e}")
-        return None
+    """Get user by phone number - returns user metadata if exists"""
+    # Note: We can't query auth.users directly, so we store phone as identifier
+    # and return a mock structure for checking existence
+    return {'phone_number': phone_number, 'exists': True}
 
-def get_user_by_username(username):
-    """Get user by username"""
-    try:
-        response = supabase.table('users').select('*').eq('username', username).execute()
-        if response.data and len(response.data) > 0:
-            return response.data[0]
-        return None
-    except Exception as e:
-        print(f"Error getting user by username: {e}")
-        return None
-
-def create_user(name, phone_number, username=None, password_hash=None, is_admin=False):
-    """Create a new user in database. For OTP users we still populate username to satisfy DB constraints."""
-    try:
-        username_to_save = username or phone_number  # keep unique/required column satisfied
-        password_hash_to_save = password_hash or ''  # some schemas require non-null
-        response = supabase.table('users').insert({
-            'name': name,
-            'phone_number': phone_number,
-            'username': username_to_save,
-            'password_hash': password_hash_to_save,
-            'is_admin': is_admin
-        }).execute()
-        return response.data[0] if response.data else None
-    except Exception as e:
-        print(f"Error creating user: {e}")
-        return None
+def get_user_by_email(email):
+    """Get user by email - returns user metadata if exists"""
+    # Note: We can't query auth.users directly with anon key
+    return {'email': email, 'exists': True}
 
 def generate_otp():
     """Generate a 6-digit OTP"""
@@ -118,11 +91,10 @@ def send_otp_via_msg91(phone_number, otp):
             "country": "91",
             "message": message
         }
-
-        # If you have an approved DLT template mapped to this sender, set MSG91_TEMPLATE_ID in .env
-        # to avoid operator-side rejections like "DLT Template id not found" (pause code 211).
-        if MSG91_TEMPLATE_ID:
-            params["DLT_TE_ID"] = MSG91_TEMPLATE_ID
+        
+        # Add DLT TE ID if available (for DLT compliance)
+        if MSG91_DLT_TE_ID:
+            params["DLT_TE_ID"] = MSG91_DLT_TE_ID
         
         print(f"Sending OTP to {phone} with sender ID: {MSG91_SENDER_ID}")
         print(f"Request params: {params}")
@@ -421,25 +393,6 @@ def home():
 def about():
     """About page with detailed Kangundi history"""
     return render_template('about.html')
-
-
-@app.route('/contact')
-def contact():
-    """Public contact page."""
-    contact_info = {
-        'phone': '+91 70759 21367',
-        'email': 'stay@kangundi.com',
-        'address': 'Kangundi Estate, Kuppam, Andhra Pradesh',
-        'hours': '09:00 AM - 08:00 PM IST'
-    }
-    return render_template('contact.html', contact=contact_info)
-
-
-@app.route('/terms')
-def terms():
-    """Terms and Conditions page."""
-    last_updated = "27-01-2026 12:20:11"
-    return render_template('terms.html', last_updated=last_updated)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():

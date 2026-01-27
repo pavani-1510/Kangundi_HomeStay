@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Us - Kangundi HomeStay{% endblock %}
+
+{% block content %}
+<div class="static-page">
+    <header class="page-header">
+        <p class="eyebrow">We're here to help</p>
+        <h1>Contact Us</h1>
+        <p class="lede">Questions about bookings, stays, or events at Kangundi HomeStay? Reach out using any of the channels below.</p>
+    </header>
+
+    <section class="info-grid">
+        <div class="info-card">
+            <h3>Call Us</h3>
+            <p><a href="tel:{{ contact.phone|replace(' ', '') }}">{{ contact.phone }}</a></p>
+            <p class="muted">Daily {{ contact.hours }}</p>
+        </div>
+        <div class="info-card">
+            <h3>Email</h3>
+            <p><a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>
+            <p class="muted">We usually respond within a business day.</p>
+        </div>
+        <div class="info-card">
+            <h3>Visit</h3>
+            <p>{{ contact.address }}</p>
+            <p class="muted">Guided estate tours available on request.</p>
+        </div>
+    </section>
+
+    <section class="support">
+        <h2>Need booking assistance?</h2>
+        <p>If you run into any issues with OTP delivery or payments, call us or email with your registered phone number and we will assist you promptly.</p>
+        <div class="cta-row">
+            <a class="cta-btn primary" href="tel:{{ contact.phone|replace(' ', '') }}">Call Support</a>
+            <a class="cta-btn secondary" href="mailto:{{ contact.email }}">Email Support</a>
+        </div>
+    </section>
+</div>
+{% endblock %}
