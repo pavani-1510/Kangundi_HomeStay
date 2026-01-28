@@ -19,6 +19,9 @@
                     {% if session.get('user_id') %}
                         <a href="{{ url_for('rooms') }}">Rooms</a>
                         <a href="{{ url_for('bookings') }}">Bookings</a>
+                        {% if session.get('is_admin') %}
+                            <a href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a>
+                        {% endif %}
                         <a href="{{ url_for('logout') }}">Logout</a>
                     {% else %}
                         <a href="{{ url_for('login') }}">Login</a>

@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta, timezone
 from functools import wraps
@@ -38,22 +39,30 @@ CASHFREE_BASE_URL = os.getenv('CASHFREE_BASE_URL', 'https://sandbox.cashfree.com
 SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
 supabase_sr: Client = create_client(supabase_url, SUPABASE_SERVICE_ROLE_KEY) if SUPABASE_SERVICE_ROLE_KEY else supabase
 
-# MSG91 Configuration for SMS OTP
-MSG91_AUTH_KEY = os.getenv('MSG91_AUTH_KEY', '')
-MSG91_TEMPLATE_ID = os.getenv('MSG91_TEMPLATE_ID', '')
-MSG91_SENDER_ID = os.getenv('MSG91_SENDER_ID', 'KANGND')  # 6 characters max
-MSG91_DLT_TE_ID = os.getenv('MSG91_DLT_TE_ID', '1307167152399423117')
+
+
+# Flask-Mail configuration for Gmail
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', 'kangundihomestay@gmail.com')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD', '')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME', 'kangundihomestay@gmail.com')
+
+mail = Mail(app)
 
 # Helper functions for database operations
-def get_user_by_phone(phone_number):
-    """Get user by phone number"""
+
+def get_user_by_email(email):
+    """Get user by email"""
     try:
-        response = supabase.table('users').select('*').eq('phone_number', phone_number).execute()
+        response = supabase.table('users').select('*').eq('email', email).execute()
         if response.data and len(response.data) > 0:
             return response.data[0]
         return None
     except Exception as e:
-        print(f"Error getting user by phone: {e}")
+        print(f"Error getting user by email: {e}")
         return None
 
 def get_user_by_username(username):
@@ -67,14 +76,15 @@ def get_user_by_username(username):
         print(f"Error getting user by username: {e}")
         return None
 
-def create_user(name, phone_number, username=None, password_hash=None, is_admin=False):
+
+def create_user(name, email, username=None, password_hash=None, is_admin=False):
     """Create a new user in database. For OTP users we still populate username to satisfy DB constraints."""
     try:
-        username_to_save = username or phone_number  # keep unique/required column satisfied
+        username_to_save = username or email  # keep unique/required column satisfied
         password_hash_to_save = password_hash or ''  # some schemas require non-null
         response = supabase.table('users').insert({
             'name': name,
-            'phone_number': phone_number,
+            'email': email,
             'username': username_to_save,
             'password_hash': password_hash_to_save,
             'is_admin': is_admin
@@ -89,98 +99,18 @@ def generate_otp():
     return ''.join(random.choices(string.digits, k=6))
 
 
-def send_otp_via_msg91(phone_number, otp):
-    """Send OTP via MSG91 v5 OTP API"""
-    if not MSG91_AUTH_KEY or not MSG91_TEMPLATE_ID:
-        print("MSG91_AUTH_KEY or MSG91_TEMPLATE_ID not configured. OTP not sent.")
-        print(f"DEBUG - OTP for {phone_number}: {otp}")
+
+def send_otp_via_email(email, otp):
+    """Send OTP to user via email using Flask-Mail."""
+    try:
+        subject = "Your Kangundi HomeStay OTP"
+        body = f"Your OTP for login/signup is: {otp}\n\nIf you did not request this, please ignore."
+        msg = Message(subject=subject, recipients=[email], body=body)
+        mail.send(msg)
+        print(f"Sent OTP {otp} to email: {email}")
         return True
-    
-    try:
-        # Remove +91 if present and ensure 10 digits, then add country code
-        phone = phone_number.replace('+91', '').replace('+', '').strip()
-        mobile = f"91{phone}"
-        
-        url = "https://api.msg91.com/api/v5/otp"
-        headers = {
-            "authkey": MSG91_AUTH_KEY,
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "mobile": mobile,
-            "template_id": MSG91_TEMPLATE_ID
-        }
-        
-        print(f"📤 Sending OTP to {mobile}")
-        print(f"🔑 Template ID: {MSG91_TEMPLATE_ID}")
-        
-        response = requests.post(url, json=payload, headers=headers, timeout=5)
-        
-        print(f"✅ Status: {response.status_code}")
-        print(f"📨 Response: {response.text}")
-        
-        if response.status_code == 200:
-            print(f"✅ OTP sent successfully to {phone_number}")
-            return True
-        else:
-            print(f"❌ Failed to send OTP: {response.status_code}")
-            return False
-            
     except Exception as e:
-        print(f"❌ Error: {e}")
-        return False
-
-
-
-
-def send_otp_via_msg91(phone_number, otp):
-    """Send OTP via MSG91 SMS"""
-    if not MSG91_AUTH_KEY:
-        print("MSG91_AUTH_KEY not configured. OTP not sent.")
-        print(f"DEBUG - OTP for {phone_number}: {otp}")
-        return True  # Return True for testing without API key
-    
-    try:
-        # Remove +91 if present and ensure 10 digits
-        phone = phone_number.replace('+91', '').replace('+', '').strip()
-        
-        # Custom message
-        message = f"Your otp to login to Kangundi Homestay is {otp}. Please ignore if this is not by you."
-        
-        # MSG91 SMS API endpoint (using sendhttp.php for custom messages)
-        url = "https://control.msg91.com/api/sendhttp.php"
-        
-        params = {
-            "authkey": MSG91_AUTH_KEY,
-            "mobiles": f"91{phone}",
-            "sender": MSG91_SENDER_ID,
-            "route": "1",  # Promotional route (works for DND numbers)
-            "country": "91",
-            "message": message
-        }
-        
-        print(f"Sending OTP to {phone} with sender ID: {MSG91_SENDER_ID}")
-        print(f"Request params: {params}")
-        
-        response = requests.get(url, params=params)
-        
-        print(f"MSG91 Response Status: {response.status_code}")
-        print(f"MSG91 Response Body: {response.text}")
-        
-        # MSG91 returns message ID on success (hex encoded) or error text on failure
-        # Check for error keywords instead
-        error_keywords = ["error", "invalid", "failure", "failed", "unauthorized", "denied"]
-        response_lower = response.text.lower()
-        
-        if response.status_code == 200 and not any(keyword in response_lower for keyword in error_keywords):
-            print(f"✅ OTP sent successfully to {phone_number} (Message ID: {response.text})")
-            return True
-        else:
-            print(f"❌ Failed to send OTP: {response.status_code} - {response.text}")
-            return False
-            
-    except Exception as e:
-        print(f"Error sending OTP via MSG91: {e}")
+        print(f"Error sending OTP via email: {e}")
         return False
 
 
@@ -481,44 +411,52 @@ def terms():
 def signup():
     if 'user_id' in session:
         return redirect(url_for('home'))
-    
+
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
+        email = request.form.get('email', '').strip()
         phone_number = request.form.get('phone_number', '').strip()
-        
+        password = request.form.get('password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
+
         # Validation
-        if not name or not phone_number:
-            flash('Name and phone number are required!', 'error')
+        if not name or not email or not phone_number or not password or not confirm_password:
+            flash('All fields are required!', 'error')
             return redirect(url_for('signup'))
-        
-        if len(phone_number) < 10:
-            flash('Please enter a valid phone number!', 'error')
+
+        if password != confirm_password:
+            flash('Passwords do not match!', 'error')
             return redirect(url_for('signup'))
-        
+
+        if '@' not in email or '.' not in email:
+            flash('Please enter a valid email address!', 'error')
+            return redirect(url_for('signup'))
+
         try:
             # Check if user already exists in public.users table
-            existing = supabase.table('users').select('*').eq('phone_number', phone_number).execute()
+            existing = supabase.table('users').select('*').eq('email', email).execute()
             if existing.data:
-                flash('This phone number is already registered! Please login.', 'error')
+                flash('This email is already registered! Please login.', 'error')
                 return redirect(url_for('login'))
-            
+
             # Generate and send OTP
             otp = generate_otp()
             session['signup_otp'] = otp
-            session['signup_phone'] = phone_number
+            session['signup_email'] = email
             session['signup_name'] = name
-            
-            if send_otp_via_msg91(phone_number, otp):
-                flash(f'OTP sent to {phone_number}', 'success')
+            session['signup_phone'] = phone_number
+
+            if send_otp_via_email(email, otp):
+                flash(f'OTP sent to {email}', 'success')
             else:
                 flash(f'Failed to send OTP. Your OTP: {otp}', 'info')
-            
+
             return redirect(url_for('verify_signup_otp'))
-                
+
         except Exception as e:
             print(f"Signup error: {e}")
             flash(f'Signup error. Please try again.', 'error')
-    
+
     return render_template('signup.html')
 
 @app.route('/verify-signup-otp', methods=['GET', 'POST'])
@@ -526,23 +464,30 @@ def verify_signup_otp():
     if 'signup_otp' not in session:
         flash('Please sign up first!', 'error')
         return redirect(url_for('signup'))
-    
+
     if request.method == 'POST':
         otp = request.form.get('otp')
-        
+        password = request.form.get('password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
         if otp == session.get('signup_otp'):
-            # OTP verified - create user in public.users table
-            phone_number = session.get('signup_phone')
+            email = session.get('signup_email')
             name = session.get('signup_name')
-            
+            phone_number = session.get('signup_phone')
+            if not password or not confirm_password:
+                flash('Please enter and confirm your password.', 'error')
+                return render_template('verify_otp.html', page_type='signup')
+            if password != confirm_password:
+                flash('Passwords do not match!', 'error')
+                return render_template('verify_otp.html', page_type='signup')
             try:
-                # Insert user into public.users table
+                password_hash = generate_password_hash(password)
                 result = supabase.table('users').insert({
-                    'phone_number': phone_number,
+                    'email': email,
                     'name': name,
+                    'phone_number': phone_number,
+                    'password_hash': password_hash,
                     'created_at': datetime.now(timezone.utc).isoformat()
                 }).execute()
-                
                 if result.data:
                     user = result.data[0]
                     session['user_id'] = user['id']
@@ -574,139 +519,86 @@ def verify_signup_otp():
 def login():
     if 'user_id' in session:
         return redirect(url_for('home'))
-    
+
     if request.method == 'POST':
-        identifier = request.form.get('identifier', '').strip()
+        email = request.form.get('email', '').strip()
+        login_method = request.form.get('login_method', 'password')
         password = request.form.get('password', '').strip()
-        
-        if not identifier:
-            flash('Please enter your phone number or email!', 'error')
+        otp = request.form.get('otp', '').strip()
+
+        if not email:
+            flash('Please enter your email!', 'error')
             return redirect(url_for('login'))
-        
-        # Determine if identifier is email or phone
-        is_email = '@' in identifier
-        
-        try:
-            if is_email:
-                # Email login - requires password
-                if not password:
-                    flash('Please enter your password!', 'error')
-                    return redirect(url_for('login'))
-                
-                response = supabase.auth.sign_in_with_password({
-                    'email': identifier,
-                    'password': password
-                })
-                
-                if response.user:
-                    session.permanent = True
-                    session['user_id'] = response.user.id
-                    session['email'] = response.user.email
-                    session['phone_number'] = response.user.phone
-                    
-                    # Get name from user_metadata, fallback to email username
-                    user_name = response.user.user_metadata.get('name', '')
-                    if not user_name:
-                        # Fallback to email username part or phone
-                        if response.user.email:
-                            user_name = response.user.email.split('@')[0]
-                        elif response.user.phone:
-                            user_name = response.user.phone
-                        else:
-                            user_name = 'User'
-                    
-                    session['name'] = user_name
-                    session['is_admin'] = False
-                    
-                    flash(f'Welcome back, {user_name}!', 'success')
-                    
-                    if session.get('is_admin', False):
-                        return redirect(url_for('admin_dashboard'))
-                    
-                    next_page = request.args.get('next')
-                    return redirect(next_page) if next_page else redirect(url_for('home'))
-                else:
-                    flash('Invalid email or password!', 'error')
-            
-            else:
-                # Phone login - check if user exists in public.users
-                try:
-                    user_check = supabase.table('users').select('*').eq('phone_number', identifier).execute()
-                    if not user_check.data:
-                        flash('Phone number not registered. Please sign up first!', 'error')
-                        return redirect(url_for('signup'))
-                    
-                    # Send OTP
-                    otp = generate_otp()
-                    session['login_otp'] = otp
-                    session['login_identifier'] = identifier
-                    session['login_is_email'] = False
-                    
-                    if send_otp_via_msg91(identifier, otp):
-                        flash(f'OTP sent to {identifier}', 'success')
-                    else:
-                        flash(f'Failed to send OTP. Your OTP: {otp}', 'info')
-                    
-                    return redirect(url_for('verify_login_otp'))
-                except Exception as e:
-                    print(f"Login check error: {e}")
-                    flash('Login error. Please try again.', 'error')
-                    
-        except Exception as e:
-            print(f"Login error: {e}")
-            if 'Invalid login credentials' in str(e) or 'Invalid' in str(e):
-                flash('Invalid credentials. Please check and try again.', 'error')
-            else:
-                flash('Login failed. Please try again.', 'error')
-    
+
+        user = get_user_by_email(email)
+        if not user:
+            flash('No account found for this email.', 'error')
+            return redirect(url_for('login'))
+
+        if login_method == 'password':
+            if not password:
+                flash('Please enter your password!', 'error')
+                return redirect(url_for('login'))
+            if not check_password_hash(user['password_hash'], password):
+                flash('Incorrect password.', 'error')
+                return redirect(url_for('login'))
+            # Successful login
+            session['user_id'] = user['id']
+            session['email'] = user['email']
+            session['name'] = user['name']
+            session['phone_number'] = user.get('phone_number', '')
+            session['is_admin'] = user.get('is_admin', False)
+            session.permanent = True
+            flash(f'Welcome back, {user["name"]}!', 'success')
+            if session.get('is_admin', False):
+                return redirect(url_for('admin_dashboard'))
+            return redirect(url_for('home'))
+
+        elif login_method == 'otp':
+            if not otp:
+                flash('Please enter the OTP sent to your email.', 'error')
+                return redirect(url_for('login'))
+            if otp != session.get('login_otp') or email != session.get('login_otp_email'):
+                flash('Invalid OTP.', 'error')
+                return redirect(url_for('login'))
+            # Successful OTP login
+            session['user_id'] = user['id']
+            session['email'] = user['email']
+            session['name'] = user['name']
+            session['phone_number'] = user.get('phone_number', '')
+            session['is_admin'] = user.get('is_admin', False)
+            session.permanent = True
+            session.pop('login_otp', None)
+            session.pop('login_otp_email', None)
+            flash(f'Welcome back, {user["name"]}!', 'success')
+            if session.get('is_admin', False):
+                return redirect(url_for('admin_dashboard'))
+            return redirect(url_for('home'))
+
+        else:
+            flash('Invalid login method.', 'error')
+            return redirect(url_for('login'))
+
     return render_template('login.html')
 
+# Endpoint to request OTP for login
+@app.route('/request-login-otp', methods=['POST'])
+def request_login_otp():
+    data = request.get_json()
+    email = data.get('email', '').strip()
+    user = get_user_by_email(email)
+    if not user:
+        return {'message': 'No account found for this email.'}, 404
+    otp = generate_otp()
+    session['login_otp'] = otp
+    session['login_otp_email'] = email
+    if send_otp_via_email(email, otp):
+        return {'message': f'OTP sent to {email}.'}
+    else:
+        return {'message': 'Failed to send OTP.'}, 500
+
 @app.route('/verify-login-otp', methods=['GET', 'POST'])
-def verify_login_otp():
-    if 'login_otp' not in session:
-        flash('Please log in first!', 'error')
-        return redirect(url_for('login'))
-    
-    if request.method == 'POST':
-        otp = request.form.get('otp')
-        identifier = session.get('login_identifier')
-        is_email = session.get('login_is_email', False)
-        
-        # Verify with our custom OTP
-        if otp == session.get('login_otp'):
-            phone_number = identifier
-            try:
-                # Get user from public.users table
-                user_data = supabase.table('users').select('*').eq('phone_number', phone_number).execute()
-                
-                if user_data.data:
-                    user = user_data.data[0]
-                    session['user_id'] = user['id']
-                    session['phone_number'] = phone_number
-                    session['name'] = user.get('name', phone_number)
-                    session['is_admin'] = user.get('is_admin', False)
-                    session.permanent = True
-                    
-                    session.pop('login_otp', None)
-                    session.pop('login_identifier', None)
-                    session.pop('login_is_email', None)
-                    
-                    flash(f'Welcome back, {user["name"]}!', 'success')
-                    
-                    # Redirect admin to admin dashboard
-                    if session.get('is_admin', False):
-                        return redirect(url_for('admin_dashboard'))
-                    
-                    next_page = request.args.get('next')
-                    return redirect(next_page) if next_page else redirect(url_for('home'))
-                    
-            except Exception as e:
-                print(f"OTP verification error: {e}")
-                flash('OTP verification failed. Please try again.', 'error')
-        else:
-            flash('Invalid OTP. Please try again.', 'error')
-    
-    return render_template('verify_otp.html', page_type='login')
+## Remove verify_login_otp route (no longer needed, handled in login)
 
 @app.route('/rooms')
 @login_required
@@ -1091,15 +983,24 @@ def admin_add_homestay():
     """Add a new homestay"""
     if request.method == 'POST':
         try:
+            def parse_int_field(val, fallback=0):
+                if val is None or val == '':
+                    return fallback
+                try:
+                    return int(val)
+                except Exception:
+                    return fallback
             homestay_data = {
                 'owner': request.form.get('owner'),
-                'rooms': int(request.form.get('rooms', 0)),
-                'beds': int(request.form.get('beds', 0)),
+                'rooms': parse_int_field(request.form.get('rooms')),
+                'beds': parse_int_field(request.form.get('beds')),
                 'floor': request.form.get('floor'),
                 'description': request.form.get('description'),
-                'price': int(request.form.get('price', 0)),
+                'price': parse_int_field(request.form.get('price')),
                 'contact': request.form.get('contact')
             }
+            # Remove any fields with empty string values
+            homestay_data = {k: v for k, v in homestay_data.items() if v != ''}
             
             response = supabase.table('homestays').insert(homestay_data).execute()
             
@@ -1132,15 +1033,24 @@ def admin_edit_homestay(homestay_id):
     
     if request.method == 'POST':
         try:
+            def parse_int_field(val, fallback):
+                if val is None or val == '':
+                    return fallback
+                try:
+                    return int(val)
+                except Exception:
+                    return fallback
             update_data = {
                 'owner': request.form.get('owner'),
-                'rooms': int(request.form.get('rooms', 0)),
-                'beds': int(request.form.get('beds', 0)),
+                'rooms': parse_int_field(request.form.get('rooms'), homestay.get('rooms', 0)),
+                'beds': parse_int_field(request.form.get('beds'), homestay.get('beds', 0)),
                 'floor': request.form.get('floor'),
                 'description': request.form.get('description'),
-                'price': int(request.form.get('price', 0)),
+                'price': parse_int_field(request.form.get('price'), homestay.get('price', 0)),
                 'contact': request.form.get('contact')
             }
+            # Remove any fields with empty string values
+            update_data = {k: v for k, v in update_data.items() if v != ''}
             
             response = supabase.table('homestays').update(update_data).eq('id', homestay_id).execute()
             

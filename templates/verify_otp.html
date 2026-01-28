@@ -27,18 +27,32 @@
                 
                 {% if page_type == 'signup' %}
                     <form method="POST" action="{{ url_for('verify_signup_otp') }}" class="auth-form" id="otpForm">
+                        <div class="form-group">
+                            <label for="otp">OTP Code</label>
+                            <input type="text" id="otp" name="otp" required 
+                                   placeholder="000000" autocomplete="off"
+                                   maxlength="6" pattern="[0-9]{6}">
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" required placeholder="Enter password">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm_password">Confirm Password</label>
+                            <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm password">
+                        </div>
+                        <button type="submit" class="auth-btn">Verify OTP & Create Account</button>
+                    </form>
                 {% else %}
                     <form method="POST" action="{{ url_for('verify_login_otp') }}" class="auth-form" id="otpForm">
-                {% endif %}
-                    <div class="form-group">
-                        <label for="otp">OTP Code</label>
-                        <input type="text" id="otp" name="otp" required 
-                               placeholder="000000" autocomplete="off"
-                               maxlength="6" pattern="[0-9]{6}">
-                    </div>
-                    
-                    <button type="submit" class="auth-btn">Verify OTP</button>
-                </form>
+                        <div class="form-group">
+                            <label for="otp">OTP Code</label>
+                            <input type="text" id="otp" name="otp" required 
+                                   placeholder="000000" autocomplete="off"
+                                   maxlength="6" pattern="[0-9]{6}">
+                        </div>
+                        <button type="submit" class="auth-btn">Verify OTP</button>
+                    </form>
                 
                 <p class="auth-footer">
                     {% if page_type == 'signup' %}

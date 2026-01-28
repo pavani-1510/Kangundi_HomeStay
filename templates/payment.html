@@ -341,7 +341,7 @@ function initiateCashfree() {
     const orderId = `ORDER_${Date.now()}`;
     const amount = {{ pending.total_amount | float }};
     const customerId = '{{ session.get("user_id") or "guest" }}';
-    const phone = '{{ session.get("phone_number") or "9999999999" }}';
+    const phone = '{{ session["phone_number"] if session.get("phone_number") else "" }}';
 
     console.log('Payment payload:', { order_id: orderId, amount, customer_id: customerId, phone });
 
