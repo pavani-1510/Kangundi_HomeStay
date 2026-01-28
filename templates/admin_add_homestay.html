@@ -4,31 +4,58 @@
 
 {% block content %}
 <style>
+    :root {
+        --primary: #1f2937;
+        --secondary: #6b7280;
+        --accent: #10b981;
+        --accent-dark: #059669;
+        --border: #e5e7eb;
+        --background: #f9fafb;
+        --text: #111827;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: white;
+    }
+
     .form-container {
         max-width: 700px;
         margin: 40px auto;
         padding: 40px;
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        border: 1px solid var(--border);
     }
 
     .form-container h1 {
-        color: #3d3527;
-        text-align: center;
-        margin-bottom: 30px;
-        font-size: 2rem;
+        color: var(--text);
+        margin-bottom: 8px;
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    .form-subtitle {
+        color: var(--secondary);
+        margin-bottom: 32px;
+        font-size: 14px;
     }
 
     .form-group {
-        margin-bottom: 25px;
+        margin-bottom: 20px;
     }
 
     .form-group label {
         display: block;
         margin-bottom: 8px;
-        color: #3d3527;
+        color: var(--text);
         font-weight: 600;
+        font-size: 14px;
     }
 
     .form-group input,
@@ -36,72 +63,68 @@
     .form-group select {
         width: 100%;
         padding: 12px;
-        border: 2px solid #e8dcc8;
-        border-radius: 8px;
-        font-size: 1rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 14px;
         font-family: inherit;
-        transition: border-color 0.3s;
+        transition: all 0.2s ease;
         box-sizing: border-box;
+        color: var(--text);
     }
 
     .form-group input:focus,
     .form-group textarea:focus,
     .form-group select:focus {
         outline: none;
-        border-color: #d97706;
-        box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
     }
 
     .form-group textarea {
         resize: vertical;
-        min-height: 100px;
+        min-height: 120px;
     }
 
     .form-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 20px;
-    }
-
-    .form-row .form-group {
-        margin-bottom: 0;
+        margin-bottom: 20px;
     }
 
     .btn-submit {
         width: 100%;
         padding: 14px;
-        background: linear-gradient(135deg, #d97706 0%, #059669 100%);
+        background: var(--accent);
         color: white;
         border: none;
-        border-radius: 8px;
-        font-size: 1.1rem;
+        border-radius: 6px;
+        font-size: 14px;
         font-weight: 600;
         cursor: pointer;
-        transition: transform 0.3s, box-shadow 0.3s;
+        transition: all 0.2s ease;
+        margin-top: 8px;
     }
 
     .btn-submit:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 20px rgba(217, 119, 6, 0.3);
+        background: var(--accent-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
     }
 
     .back-link {
         display: block;
         text-align: center;
         margin-top: 20px;
-        color: #d97706;
+        color: var(--secondary);
         text-decoration: none;
         font-weight: 600;
+        font-size: 14px;
+        transition: color 0.2s ease;
     }
 
     .back-link:hover {
-        text-decoration: underline;
-    }
-
-    .help-text {
-        font-size: 0.9rem;
-        color: #6b5e4c;
-        margin-top: 5px;
+        color: var(--text);
     }
 
     @media (max-width: 768px) {
@@ -111,13 +134,14 @@
 
         .form-container {
             margin: 20px;
-            padding: 20px;
+            padding: 24px;
         }
     }
 </style>
 
 <div class="form-container">
-    <h1>➕ Add Homestay</h1>
+    <h1>Add Homestay</h1>
+    <p class="form-subtitle">Add a new property to the system</p>
 
     <form method="POST">
         <div class="form-group">
@@ -157,7 +181,7 @@
             <input type="tel" id="contact" name="contact" required placeholder="xxxxxxxxxx">
         </div>
 
-        <button type="submit" class="btn-submit">💾 Add Homestay</button>
+        <button type="submit" class="btn-submit">Add Homestay</button>
     </form>
 
     <a href="{{ url_for('admin_dashboard') }}" class="back-link">← Back to Dashboard</a>

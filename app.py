@@ -7,10 +7,11 @@ from dotenv import load_dotenv
 import os
 import random
 import string
+import requests
 import hmac
 import hashlib
 import json
-import requests
+import re
 
 # Load environment variables
 load_dotenv()
@@ -26,27 +27,22 @@ app.config['SESSION_REFRESH_EACH_REQUEST'] = True  # Refresh session on each req
 supabase_url = os.getenv('SUPABASE_URL')
 supabase_key = os.getenv('SUPABASE_KEY')
 
-if not supabase_url or not supabase_key:
-    print("⚠️  WARNING: SUPABASE_URL or SUPABASE_KEY not found in environment!")
-    print(f"   SUPABASE_URL: {'✓ Set' if supabase_url else '✗ Missing'}")
-    print(f"   SUPABASE_KEY: {'✓ Set' if supabase_key else '✗ Missing'}")
-else:
-    print("✓ Supabase credentials loaded")
-
 supabase: Client = create_client(supabase_url, supabase_key)
-# Service-role client for trusted writes (never expose key to frontend)
-SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
-supabase_sr: Client = create_client(supabase_url, SUPABASE_SERVICE_ROLE_KEY) if SUPABASE_SERVICE_ROLE_KEY else supabase
 
 # Cashfree configuration
-CASHFREE_APP_ID = os.getenv('CASHFREE_APP_ID')
-CASHFREE_SECRET_KEY = os.getenv('CASHFREE_SECRET_KEY')
+CASHFREE_APP_ID = os.getenv('CASHFREE_APP_ID', '')
+CASHFREE_SECRET_KEY = os.getenv('CASHFREE_SECRET_KEY', '')
 CASHFREE_BASE_URL = os.getenv('CASHFREE_BASE_URL', 'https://sandbox.cashfree.com')
+
+# Service-role client for trusted writes (never expose key to frontend)
+SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
+supabase_sr: Client = create_client(supabase_url, SUPABASE_SERVICE_ROLE_KEY) if SUPABASE_SERVICE_ROLE_KEY else supabase
 
 # MSG91 Configuration for SMS OTP
 MSG91_AUTH_KEY = os.getenv('MSG91_AUTH_KEY', '')
 MSG91_TEMPLATE_ID = os.getenv('MSG91_TEMPLATE_ID', '')
 MSG91_SENDER_ID = os.getenv('MSG91_SENDER_ID', 'KANGND')  # 6 characters max
+MSG91_DLT_TE_ID = os.getenv('MSG91_DLT_TE_ID', '1307167152399423117')
 
 # Helper functions for database operations
 def get_user_by_phone(phone_number):
@@ -94,6 +90,50 @@ def generate_otp():
 
 
 def send_otp_via_msg91(phone_number, otp):
+    """Send OTP via MSG91 v5 OTP API"""
+    if not MSG91_AUTH_KEY or not MSG91_TEMPLATE_ID:
+        print("MSG91_AUTH_KEY or MSG91_TEMPLATE_ID not configured. OTP not sent.")
+        print(f"DEBUG - OTP for {phone_number}: {otp}")
+        return True
+    
+    try:
+        # Remove +91 if present and ensure 10 digits, then add country code
+        phone = phone_number.replace('+91', '').replace('+', '').strip()
+        mobile = f"91{phone}"
+        
+        url = "https://api.msg91.com/api/v5/otp"
+        headers = {
+            "authkey": MSG91_AUTH_KEY,
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "mobile": mobile,
+            "template_id": MSG91_TEMPLATE_ID
+        }
+        
+        print(f"📤 Sending OTP to {mobile}")
+        print(f"🔑 Template ID: {MSG91_TEMPLATE_ID}")
+        
+        response = requests.post(url, json=payload, headers=headers, timeout=5)
+        
+        print(f"✅ Status: {response.status_code}")
+        print(f"📨 Response: {response.text}")
+        
+        if response.status_code == 200:
+            print(f"✅ OTP sent successfully to {phone_number}")
+            return True
+        else:
+            print(f"❌ Failed to send OTP: {response.status_code}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        return False
+
+
+
+
+def send_otp_via_msg91(phone_number, otp):
     """Send OTP via MSG91 SMS"""
     if not MSG91_AUTH_KEY:
         print("MSG91_AUTH_KEY not configured. OTP not sent.")
@@ -118,11 +158,6 @@ def send_otp_via_msg91(phone_number, otp):
             "country": "91",
             "message": message
         }
-
-        # If you have an approved DLT template mapped to this sender, set MSG91_TEMPLATE_ID in .env
-        # to avoid operator-side rejections like "DLT Template id not found" (pause code 211).
-        if MSG91_TEMPLATE_ID:
-            params["DLT_TE_ID"] = MSG91_TEMPLATE_ID
         
         print(f"Sending OTP to {phone} with sender ID: {MSG91_SENDER_ID}")
         print(f"Request params: {params}")
@@ -212,7 +247,8 @@ def compute_nights(from_date_str, till_date_str):
         end = datetime.fromisoformat(till_date_str)
     except Exception:
         return None
-    delta = (end - start).days
+    delta = int((end - start).days)
+    print(f"DEBUG compute_nights: from={from_date_str}, till={till_date_str}, delta={delta} (type: {type(delta).__name__})")
     return delta if delta > 0 else None
 
 
@@ -656,22 +692,13 @@ def verify_login_otp():
                     session.pop('login_is_email', None)
                     
                     flash(f'Welcome back, {user["name"]}!', 'success')
-                session['user_id'] = phone_number  # Use phone as ID temporarily
-                session['name'] = phone_number[:4] + '***'  # Masked phone
-                session['is_admin'] = False
-                
-                session.pop('login_otp', None)
-                session.pop('login_identifier', None)
-                session.pop('login_is_email', None)
-                
-                flash(f'Welcome back, {user["name"]}!', 'success')
-                
-                # Redirect admin to admin dashboard
-                if session.get('is_admin', False):
-                    return redirect(url_for('admin_dashboard'))
-                
-                next_page = request.args.get('next')
-                return redirect(next_page) if next_page else redirect(url_for('home'))
+                    
+                    # Redirect admin to admin dashboard
+                    if session.get('is_admin', False):
+                        return redirect(url_for('admin_dashboard'))
+                    
+                    next_page = request.args.get('next')
+                    return redirect(next_page) if next_page else redirect(url_for('home'))
                     
             except Exception as e:
                 print(f"OTP verification error: {e}")
@@ -688,18 +715,6 @@ def rooms():
     try:
         response = supabase.table('homestays').select('*').execute()
         homestays_data = response.data if response.data else []
-        
-        # Add availability status for each homestay
-        for homestay in homestays_data:
-            availability = get_availability_status(homestay['id'], 7)
-            # Get next available date and beds available today
-            today = datetime.now().date().isoformat()
-            if today in availability:
-                homestay['available_beds'] = availability[today]['available']
-                homestay['is_fully_booked'] = availability[today]['is_fully_booked']
-            else:
-                homestay['available_beds'] = homestay.get('beds', 0)
-                homestay['is_fully_booked'] = False
     except Exception as e:
         print(f"Error fetching homestays: {e}")
         flash('Error loading homestays. Please try again.', 'error')
@@ -799,8 +814,13 @@ def book_homestay(homestay_id):
             flash(f'Only {available_beds} bed(s) available for your selected dates. Homestay has {homestay.get("beds", 0)} total beds.', 'error')
             return redirect(url_for('book_homestay', homestay_id=homestay_id))
 
-        price_per_night = homestay.get('price', 0) or 0
-        total_amount = price_per_night * nights
+        # Price is fixed: ₹500 per bed per night
+        price_per_bed_per_night = 500
+        # FIX: Explicit calculation - should be 2000 for 2beds*2nights*500
+        total_amount = int(nights) * int(beds_requested) * int(price_per_bed_per_night)
+        
+        # DEBUG LOG
+        print(f"DEBUG CALC: nights={nights}, beds={beds_requested}, price={price_per_bed_per_night}, result={total_amount}")
 
         session['pending_booking'] = {
             'homestay_id': homestay_id,
@@ -808,7 +828,7 @@ def book_homestay(homestay_id):
             'till_date': till_date,
             'nights': nights,
             'beds_requested': beds_requested,
-            'price_per_night': price_per_night,
+            'price_per_bed_per_night': price_per_bed_per_night,
             'total_amount': total_amount,
             'homestay_owner': homestay.get('owner'),
             'homestay_contact': homestay.get('contact'),
@@ -831,6 +851,17 @@ def payment():
     if not pending:
         flash('No booking in progress.', 'error')
         return redirect(url_for('rooms'))
+    
+    # RECALCULATE total_amount to ensure it's correct
+    nights_val = pending.get('nights', 1)
+    beds_val = pending.get('beds_requested', 1)
+    price_per_bed = 500
+    calculated_total = int(nights_val) * int(beds_val) * int(price_per_bed)
+    
+    # Update the pending dict with the correct total
+    pending['total_amount'] = calculated_total
+    session['pending_booking'] = pending
+    
 
     homestay = get_homestay_by_id(pending['homestay_id'])
 
@@ -886,8 +917,7 @@ def create_order():
     try:
         payload = request.get_json(force=True)
         order_id = payload.get('order_id')
-        # amount = float(payload.get('amount', 0))
-        amount = 1
+        amount = float(payload.get('amount', 0))
         customer_id = payload.get('customer_id')
         phone = payload.get('phone')
 
@@ -986,15 +1016,18 @@ def bookings():
     """List current user's bookings."""
     user_id = session.get('user_id')
     user_phone = session.get('phone_number')
+    user_email = session.get('email')
     user_name = session.get('name', 'User')
 
     try:
         query = supabase.table('bookings').select('*')
-        # Try to filter by user_id first, then fallback to phone
-        if user_id:
-            query = query.eq('user_id', user_id)
+        # Filter by email (most reliable), then phone, then name
+        if user_email:
+            query = query.eq('user_email', user_email)
         elif user_phone:
             query = query.eq('user_phone', user_phone)
+        elif user_name:
+            query = query.eq('user_name', user_name)
         
         response = query.order('from_date', desc=False).execute()
         bookings_data = response.data if response.data else []

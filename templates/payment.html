@@ -4,50 +4,334 @@
 
 {% block content %}
 <div class="payment-page">
-    <div class="payment-card">
-        <h1>💳 Payment (Demo)</h1>
-        <p class="meta">Homestay ID: {{ pending.homestay_id }}</p>
-        {% if homestay %}
-        <p class="meta">Owner: {{ homestay.owner }} | Price: ₹{{ homestay.price }}/night</p>
-        {% endif %}
-        <div class="summary">
-            <div><strong>From:</strong> {{ pending.from_date }}</div>
-            <div><strong>Till:</strong> {{ pending.till_date }}</div>
-            <div><strong>Nights:</strong> {{ pending.nights }}</div>
-            <div class="total"><strong>Total Amount:</strong> ₹{{ pending.total_amount }}</div>
+    <div class="payment-container">
+        <div class="payment-header">
+            <h1 class="payment-title">Complete Your Booking</h1>
+            <p class="payment-subtitle">Secure payment via Cashfree</p>
         </div>
 
-        <div class="payment-notice">
-            <p>✅ <strong>Secure Hosted Checkout (Cashfree)</strong></p>
-            <p>UPI, cards, netbanking, wallets — choose at checkout.</p>
+        <div class="payment-content">
+            <div class="booking-summary">
+                <h2 class="summary-title">Booking Details</h2>
+                
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="summary-label">Property</span>
+                        <span class="summary-value">{% if homestay %}{{ homestay.owner }}{% endif %}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Check-in</span>
+                        <span class="summary-value">{{ pending.from_date }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Check-out</span>
+                        <span class="summary-value">{{ pending.till_date }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Nights</span>
+                        <span class="summary-value">{{ pending.nights }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Beds Booked</span>
+                        <span class="summary-value">{{ pending.beds_requested }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Price per Bed/Night</span>
+                        <span class="summary-value">₹500</span>
+                    </div>
+                </div>
+
+                <div class="price-breakdown">
+                    <div class="breakdown-row">
+                        <span>₹500 × {{ pending.beds_requested }} bed{{ 's' if pending.beds_requested != 1 else '' }} × {{ pending.nights }} night{{ 's' if pending.nights != 1 else '' }}</span>
+                        <span>₹{{ pending.total_amount }}</span>
+                    </div>
+                    <div class="breakdown-row total-row">
+                        <span>Total Amount</span>
+                        <span class="total-amount">₹{{ pending.total_amount }}</span>
+                    </div>
+                </div>
+
+                <div class="payment-note">
+                    <div class="note-icon">✓</div>
+                    <div class="note-content">
+                        <p class="note-title">Secure Payment</p>
+                        <p class="note-desc">Multiple payment options available - UPI, Cards, Net Banking, Wallets</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="payment-action">
+                <button type="button" class="btn-pay" onclick="initiateCashfree()">
+                    Pay ₹{{ pending.total_amount }}
+                </button>
+                <a class="btn-cancel" href="{{ url_for('book_homestay', homestay_id=pending.homestay_id) }}">← Change Dates</a>
+            </div>
         </div>
-
-        <button type="button" class="pay-btn" onclick="initiateCashfree()">
-            Pay ₹{{ pending.total_amount }}
-        </button>
-
-        <a class="back-link" href="{{ url_for('book_homestay', homestay_id=pending.homestay_id) }}">← Change dates</a>
     </div>
 </div>
 
 <style>
-.payment-page { max-width: 640px; margin: 0 auto; padding: 2rem; }
-.payment-card { background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 10px 30px rgba(217, 119, 6, 0.12); }
-.summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem 1rem; margin: 1rem 0; }
-.summary .total { grid-column: 1 / -1; background: linear-gradient(135deg, #d97706 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 1.2rem; }
-.payment-notice { background: #dcfce7; padding: 1rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #059669; }
-.payment-notice p { margin: 0.3rem 0; color: #166534; }
-.payment-form { display: flex; flex-direction: column; gap: 1rem; }
-.form-group label { font-weight: 600; color: #3d3527; margin-bottom: 0.3rem; display: block; }
-.form-group input { width: 100%; padding: 0.85rem 1rem; border: 2px solid #e8dcc8; border-radius: 10px; font-size: 1rem; background-color: #f9f6f0; }
-.form-group input:disabled { background-color: #f5f1e8; cursor: not-allowed; }
-.form-group input:focus { outline: none; border-color: #d97706; box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1); }
-.pay-btn { padding: 0.95rem 1.4rem; border: none; border-radius: 10px; background: linear-gradient(135deg, #d97706 0%, #059669 100%); color: white; font-weight: 700; cursor: pointer; font-size: 1rem; }
-.pay-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(217, 119, 6, 0.25); }
-.meta { color: #6b5e4c; margin: 0; }
-.back-link { display: inline-block; margin-top: 1rem; color: #d97706; text-decoration: none; font-weight: 600; }
-.back-link:hover { text-decoration: underline; }
-@media (max-width: 520px) { .summary { grid-template-columns: 1fr; } }
+:root {
+    --primary: #1f2937;
+    --secondary: #6b7280;
+    --accent: #10b981;
+    --accent-dark: #059669;
+    --border: #e5e7eb;
+    --background: #f9fafb;
+    --text: #111827;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.payment-page {
+    background: white;
+    min-height: 100vh;
+    padding: 40px 16px;
+}
+
+.payment-container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.payment-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.payment-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+}
+
+.payment-subtitle {
+    font-size: 16px;
+    color: var(--secondary);
+    font-weight: 500;
+}
+
+.payment-content {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.booking-summary {
+    background: var(--background);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    padding: 28px;
+}
+
+.summary-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 20px;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+}
+
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.summary-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.price-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: white;
+    border-radius: 6px;
+}
+
+.breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: var(--secondary);
+    font-weight: 500;
+}
+
+.breakdown-row.total-row {
+    font-size: 16px;
+    color: var(--text);
+    font-weight: 700;
+    padding-top: 12px;
+    border-top: 2px solid var(--border);
+}
+
+.total-amount {
+    font-size: 20px;
+    color: var(--accent);
+}
+
+.payment-note {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background: #f0fdf4;
+    border-radius: 6px;
+    border-left: 4px solid var(--accent);
+}
+
+.note-icon {
+    font-size: 20px;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.note-content {
+    flex: 1;
+}
+
+.note-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #166534;
+    margin-bottom: 3px;
+}
+
+.note-desc {
+    font-size: 12px;
+    color: #14532d;
+    line-height: 1.4;
+}
+
+.payment-action {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btn-pay {
+    padding: 16px 28px;
+    border: none;
+    border-radius: 6px;
+    background: var(--accent);
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.btn-pay:hover {
+    background: var(--accent-dark);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+    transform: translateY(-2px);
+}
+
+.btn-cancel {
+    padding: 12px 20px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: white;
+    color: var(--secondary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+@media (max-width: 768px) {
+    .payment-page {
+        padding: 24px 16px;
+    }
+
+    .payment-header {
+        margin-bottom: 32px;
+    }
+
+    .payment-title {
+        font-size: 28px;
+    }
+
+    .booking-summary {
+        padding: 20px;
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-page {
+        padding: 16px 12px;
+    }
+
+    .payment-title {
+        font-size: 24px;
+    }
+
+    .payment-subtitle {
+        font-size: 14px;
+    }
+
+    .booking-summary {
+        padding: 16px;
+    }
+
+    .summary-title {
+        font-size: 16px;
+    }
+
+    .summary-grid {
+        gap: 10px;
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+    }
+
+    .summary-value {
+        font-size: 14px;
+    }
+
+    .btn-pay {
+        padding: 14px 24px;
+        font-size: 15px;
+    }
+}
 </style>
 {% endblock %}
 

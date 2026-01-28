@@ -3,294 +3,465 @@
 {% block title %}Browse Homestays - Kangundi HomeStay{% endblock %}
 
 {% block content %}
-<div class="rooms-page">
-    <div class="rooms-header">
-        <h1>Discover Homestays in Kangundi</h1>
-        <p>Choose from our collection of curated homestays for your climbing adventure</p>
-    </div>
+<div class="rooms-container">
+    <!-- Header Section -->
+    <section class="rooms-header-section">
+        <div class="header-content">
+            <span class="section-badge">
+                <span class="badge-icon">🏠</span>
+                <span>Featured Homestays</span>
+            </span>
+            <h1 class="header-title">Discover Your Perfect Stay</h1>
+            <p class="header-description">Choose from our curated collection of homestays in historic Kangundi, perfectly positioned for heritage exploration and bouldering adventures</p>
+        </div>
+    </section>
 
-    <div class="homestays-grid">
-        {% for homestay in homestays %}
-        <div class="homestay-card" data-animate="slide-up">
-            <div class="homestay-content">
-                <div class="owner-info">
-                    <span class="owner-label">Owner</span>
-                    <span class="owner-name">{{ homestay.owner }}</span>
-                </div>
-
-                <div class="property-details">
-                    <div class="detail-item">
-                        <div>
-                            <p class="detail-label">Rooms</p>
-                            <p class="detail-value">{{ homestay.rooms }}</p>
+    <!-- Homestays Grid -->
+    <section class="homestays-section">
+        <div class="container">
+            <div class="homestays-grid">
+                {% for homestay in homestays %}
+                <div class="homestay-card fade-on-scroll">
+                    <div class="card-header">
+                        <div class="property-icon">🏠</div>
+                        <div class="header-info">
+                            <p class="owner-label">Hosted by</p>
+                            <p class="owner-name">{{ homestay.owner }}</p>
                         </div>
                     </div>
                     
-                    <div class="detail-item">
-                        <div>
-                            <p class="detail-label">Beds</p>
-                            <p class="detail-value">{{ homestay.beds }}</p>
+                    <div class="card-body">
+                        <div class="property-stats">
+                            <div class="stat-item">
+                                <span class="stat-icon">🛏️</span>
+                                <div>
+                                    <p class="stat-label">Bedrooms</p>
+                                    <p class="stat-value">{{ homestay.rooms }}</p>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-icon">👥</span>
+                                <div>
+                                    <p class="stat-label">Total Beds</p>
+                                    <p class="stat-value">{{ homestay.beds }}</p>
+                                </div>
+                            </div>
                         </div>
+            
+                    </div>
+                    
+                    <div class="card-footer">
+                        <a href="{{ url_for('homestay_details', homestay_id=homestay.id) }}" class="view-details-btn">
+                            <span>View Details</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </a>
                     </div>
                 </div>
-                
-                <a href="{{ url_for('homestay_details', homestay_id=homestay.id) }}" class="view-btn">View Details</a>
+                {% endfor %}
             </div>
         </div>
-        {% endfor %}
-    </div>
+    </section>
 </div>
 
 <style>
-.rooms-page {
-    max-width: 1400px;
+/* ========== DESIGN SYSTEM ========== */
+:root {
+    --emerald: #10b981;
+    --emerald-dark: #059669;
+    --emerald-light: #34d399;
+    --purple: #7c3aed;
+    --ruby: #dc2626;
+    --background: #fafaf9;
+    --text-primary: #1c1917;
+    --text-secondary: #57534e;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.rooms-container {
+    background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ========== HEADER SECTION ========== */
+.rooms-header-section {
+    background: linear-gradient(135deg, #ecfdf5 0%, #faf5ff 50%, #fef2f2 100%);
+    position: relative;
+    overflow: hidden;
+    padding: 80px 16px 60px;
+}
+
+.rooms-header-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 15% 25%, rgba(16,185,129,0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 75%, rgba(124,58,237,0.08) 0%, transparent 40%);
+    pointer-events: none;
+}
+
+.header-content {
+    max-width: 900px;
     margin: 0 auto;
-    padding: 4rem 2rem;
-}
-
-.rooms-header {
     text-align: center;
-    margin-bottom: 4rem;
-    animation: slideUp 0.8s ease-out;
+    position: relative;
+    z-index: 1;
+    animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.rooms-header h1 {
-    font-size: 3.5rem;
-    font-weight: 900;
-    background: linear-gradient(135deg, #d97706 0%, #059669 50%, #b45309 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 1rem;
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.rooms-header p {
-    font-size: 1.2rem;
-    color: #6b5e4c;
-    font-weight: 300;
+.section-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 24px;
+    background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(124,58,237,0.15), rgba(220,38,38,0.1)), linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0.95));
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 999px;
+    color: var(--emerald-dark);
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(16,185,129,0.15);
+}
+
+.badge-icon {
+    font-size: 20px;
+}
+
+.header-title {
+    font-size: clamp(36px, 5vw, 56px);
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+.header-description {
+    font-size: 20px;
+    color: var(--text-secondary);
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+/* ========== HOMESTAYS SECTION ========== */
+.homestays-section {
+    padding: 100px 0;
+    position: relative;
+}
+
+.container {
+    margin: 0 auto;
+    padding: 0 16px;
 }
 
 .homestays-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 2.5rem;
-    animation: slideUp 0.8s ease-out 0.1s both;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
 }
 
+/* ========== HOMESTAY CARD ========== */
 .homestay-card {
-    background: white;
-    border-radius: 16px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.5);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
-    box-shadow: 0 8px 32px rgba(217, 119, 6, 0.1);
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     display: flex;
     flex-direction: column;
+    opacity: 0;
+    transform: translateY(40px);
+}
+
+.homestay-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.homestay-card:nth-child(1) { animation-delay: 0.1s; }
+.homestay-card:nth-child(2) { animation-delay: 0.2s; }
+.homestay-card:nth-child(3) { animation-delay: 0.3s; }
+.homestay-card:nth-child(4) { animation-delay: 0.4s; }
+
+.homestay-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--emerald), var(--purple), var(--ruby));
+    transform: scaleX(0);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.homestay-card:hover::before {
+    transform: scaleX(1);
 }
 
 .homestay-card:hover {
     transform: translateY(-12px);
-    box-shadow: 0 20px 48px rgba(217, 119, 6, 0.2);
+    box-shadow: 0 20px 60px rgba(16,185,129,0.2);
+    border-color: rgba(16,185,129,0.3);
 }
 
-.homestay-image-wrapper {
+.card-header {
+    padding: 24px 24px 20px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    background: linear-gradient(135deg, rgba(236,253,245,0.5), rgba(255,255,255,0.95));
+    border-bottom: 1px solid rgba(16,185,129,0.1);
     position: relative;
-    width: 100%;
-    height: 180px;
     overflow: hidden;
-    background: linear-gradient(135deg, #f5f1e8 0%, #e8dcc8 100%);
 }
 
-.homestay-image {
+.card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -50%;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s ease;
+    background: radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%);
+    pointer-events: none;
 }
 
-.homestay-card:hover .homestay-image {
-    transform: scale(1.08);
+.property-icon {
+    font-size: 32px;
+    flex-shrink: 0;
 }
 
-.rating-badge {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: linear-gradient(135deg, #d97706, #b45309);
-    color: white;
-    padding: 0.6rem 1.2rem;
-    border-radius: 50px;
-    font-weight: 700;
-    font-size: 0.95rem;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-}
-
-.homestay-content {
-    padding: 1.3rem;
+.header-info {
     flex: 1;
-    display: flex;
-    flex-direction: column;
 }
 
-.homestay-content h3 {
-    font-size: 1.2rem;
-    font-weight: 800;
-    color: #3d3527;
-    margin-bottom: 0.7rem;
-}
-
-.property-details {
-    flex: 1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.detail-item {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-}
-
-.detail-label {
-    font-size: 0.8rem;
-    color: #d97706;
+.owner-label {
+    font-size: 13px;
     font-weight: 600;
+    color: var(--emerald);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin: 0;
-}
-
-.detail-value {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #3d3527;
-    margin: 0;
-}
-
-.view-btn {
-    width: 100%;
-    padding: 0.8rem 1.5rem;
-    background: linear-gradient(135deg, #d97706 0%, #059669 100%);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    letter-spacing: 0.5px;
-    text-align: center;
-    text-decoration: none;
+    margin: 0 0 4px 0;
     display: block;
 }
 
-.view-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(217, 119, 6, 0.3);
+.owner-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
 }
 
-.view-btn:active {
-    transform: translateY(-1px);
+.card-body {
+    padding: 20px 24px;
+    flex: 1;
 }
 
-.features-section {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(217, 119, 6, 0.1);
+.property-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(16,185,129,0.1);
 }
 
-.features-label {
-    font-size: 0.8rem;
-    color: #d97706;
+.stat-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.stat-icon {
+    font-size: 24px;
+}
+
+.stat-label {
+    font-size: 13px;
     font-weight: 600;
+    color: var(--emerald-dark);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 2px 0;
 }
 
-.features-list {
+.stat-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.description {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.card-footer {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(16,185,129,0.1);
+    background: linear-gradient(135deg, rgba(236,253,245,0.3), rgba(255,255,255,0.95));
+}
+
+.view-details-btn {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, var(--emerald), var(--purple));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 16px rgba(16,185,129,0.3);
 }
 
-.feature-tag {
-    background: linear-gradient(135deg, rgba(217, 119, 6, 0.12), rgba(5, 150, 105, 0.08));
-    color: #6b5e4c;
-    padding: 0.35rem 0.7rem;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    border: 1px solid rgba(217, 119, 6, 0.15);
-    transition: all 0.3s ease;
+.view-details-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(16,185,129,0.4);
 }
 
-.feature-tag:hover {
-    background: linear-gradient(135deg, rgba(217, 119, 6, 0.2), rgba(5, 150, 105, 0.15));
-    border-color: rgba(217, 119, 6, 0.3);
+.view-details-btn:active {
+    transform: translateY(0);
+}
+
+/* ========== SCROLL ANIMATIONS ========== */
+.fade-on-scroll {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+    .homestays-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
 }
 
 @media (max-width: 768px) {
-    .rooms-page {
-        padding: 2rem 1.5rem;
+    .rooms-header-section {
+        padding: 60px 24px 40px;
     }
 
-    .rooms-header h1 {
-        font-size: 2.5rem;
+    .container {
+        padding: 0 24px;
     }
 
     .homestays-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 1.8rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
     }
 
-    .homestay-content {
-        padding: 1.5rem;
+    .header-title {
+        font-size: 32px;
+    }
+
+    .header-description {
+        font-size: 16px;
+    }
+
+    .card-header {
+        padding: 24px 20px 20px;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .property-stats {
+        gap: 16px;
+        margin-bottom: 16px;
+        padding-bottom: 16px;
     }
 }
 
 @media (max-width: 480px) {
-    .rooms-header h1 {
-        font-size: 2rem;
+    .rooms-header-section {
+        padding: 40px 16px 30px;
     }
 
-    .homestays-grid {
-        grid-template-columns: 1fr;
+    .header-title {
+        font-size: 24px;
     }
 
-    .homestay-content h3 {
-        font-size: 1.2rem;
+    .header-description {
+        font-size: 14px;
     }
 
-    .property-details {
-        gap: 1rem;
+    .card-header {
+        padding: 20px 16px 16px;
     }
 
-    .detail-value {
-        font-size: 0.95rem;
+    .card-body {
+        padding: 16px;
     }
-}
-.owner-info {
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(217, 119, 6, 0.1);
-}
 
-.owner-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #d97706;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    display: block;
-    margin-bottom: 0.3rem;
-}
+    .stat-value {
+        font-size: 18px;
+    }
 
-.owner-name {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #6b5e4c;
+    .description {
+        font-size: 14px;
+    }
 }
 </style>
+
+<script>
+// Scroll animations
+const observerOptions = {
+    threshold: 0.15,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const scrollObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, observerOptions);
+
+document.querySelectorAll('.fade-on-scroll').forEach(el => {
+    scrollObserver.observe(el);
+});
+</script>
 {% endblock %}

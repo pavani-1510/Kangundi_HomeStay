@@ -6,43 +6,44 @@
 <div class="receipt-page">
     <div class="receipt-card">
         <div class="receipt-header">
-            <h1>✅ Booking Confirmed!</h1>
+            <div class="success-icon">✓</div>
+            <h1>Booking Confirmed!</h1>
             <p class="status">{{ booking.status|capitalize }}</p>
         </div>
 
         <div class="receipt-grid">
             <div class="receipt-item">
-                <p class="label">Booking ID</p>
-                <p class="value">{{ booking.id }}</p>
+                <span class="label">Booking ID</span>
+                <span class="value">{{ booking.id }}</span>
             </div>
             <div class="receipt-item">
-                <p class="label">Payment Ref</p>
-                <p class="value">{{ booking.payment_reference }}</p>
+                <span class="label">Payment Ref</span>
+                <span class="value">{{ booking.payment_reference }}</span>
             </div>
             <div class="receipt-item">
-                <p class="label"> Check-In</p>
-                <p class="value">{{ booking.from_date }}</p>
+                <span class="label">Check-In</span>
+                <span class="value">{{ booking.from_date }}</span>
             </div>
             <div class="receipt-item">
-                <p class="label"> Check-Out</p>
-                <p class="value">{{ booking.till_date }}</p>
+                <span class="label">Check-Out</span>
+                <span class="value">{{ booking.till_date }}</span>
             </div>
             <div class="receipt-item">
-                <p class="label">🌙 Nights</p>
-                <p class="value">{{ booking.nights }}</p>
+                <span class="label">Nights</span>
+                <span class="value">{{ booking.nights }}</span>
             </div>
             <div class="receipt-item">
-                <p class="label"> Total Amount</p>
-                <p class="value amount">₹{{ booking.total_amount }}</p>
+                <span class="label">Total Amount</span>
+                <span class="value amount">₹{{ booking.total_amount }}</span>
             </div>
             {% if homestay %}
             <div class="receipt-item">
-                <p class="label">👤 Owner</p>
-                <p class="value">{{ homestay.owner }}</p>
+                <span class="label">Owner</span>
+                <span class="value">{{ homestay.owner }}</span>
             </div>
             <div class="receipt-item">
-                <p class="label">📞 Contact</p>
-                <p class="value">{{ homestay.contact }}</p>
+                <span class="label">Contact</span>
+                <span class="value">{{ homestay.contact }}</span>
             </div>
             {% endif %}
         </div>
@@ -52,143 +53,184 @@
         </div>
 
         <div class="actions">
-            <a href="{{ url_for('bookings') }}" class="btn primary"> View My Bookings</a>
-            <a href="{{ url_for('home') }}" class="btn secondary">← Back to Dashboard</a>
-            <a href="{{ url_for('rooms') }}" class="btn secondary">🏠 Browse More Rooms</a>
+            <a href="{{ url_for('bookings') }}" class="btn primary">View My Bookings</a>
+            <a href="{{ url_for('rooms') }}" class="btn secondary">Browse More Rooms</a>
         </div>
     </div>
 </div>
 
 <style>
+:root {
+    --primary: #1f2937;
+    --secondary: #6b7280;
+    --accent: #10b981;
+    --accent-dark: #059669;
+    --border: #e5e7eb;
+    --background: #f9fafb;
+    --text: #111827;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 .receipt-page { 
     max-width: 800px; 
     margin: 0 auto; 
-    padding: 2rem 1rem;
+    padding: 40px 16px;
+    background: white;
+    min-height: 100vh;
 }
 
 .receipt-card { 
     background: white; 
-    border-radius: 16px; 
-    padding: 2.5rem; 
-    box-shadow: 0 10px 30px rgba(217, 119, 6, 0.12);
+    border-radius: 8px; 
+    padding: 40px; 
+    border: 1px solid var(--border);
 }
 
 .receipt-header {
     text-align: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 3px solid #dcfce7;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid var(--border);
+}
+
+.success-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 16px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 32px;
+    font-weight: 700;
 }
 
 .receipt-header h1 {
-    margin: 0 0 0.5rem 0;
-    color: #3d3527;
-    font-size: 1.8rem;
+    margin: 0 0 12px 0;
+    color: var(--text);
+    font-size: 28px;
+    font-weight: 700;
 }
 
 .status { 
-    color: #059669; 
+    color: var(--accent); 
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 14px;
     margin: 0;
-    background: #dcfce7;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
+    background: #f0fdf4;
+    padding: 8px 16px;
+    border-radius: 6px;
     display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .receipt-grid { 
     display: grid; 
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
-    gap: 1.5rem; 
-    margin: 2rem 0;
+    gap: 16px; 
+    margin: 24px 0;
 }
 
 .receipt-item {
-    background: #f5f1e8;
-    padding: 1rem;
-    border-radius: 10px;
-    border-left: 4px solid #d97706;
+    background: var(--background);
+    padding: 16px;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .label { 
-    font-size: 0.85rem; 
-    color: #6b5e4c; 
-    margin: 0 0 0.3rem 0;
+    font-size: 11px; 
+    color: var(--secondary); 
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .value { 
-    font-size: 1rem; 
-    font-weight: 700; 
-    color: #3d3527; 
-    margin: 0;
+    font-size: 14px; 
+    font-weight: 600; 
+    color: var(--text); 
 }
 
 .amount {
-    background: linear-gradient(135deg, #d97706 0%, #059669 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-size: 1.2rem;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
 }
 
 .receipt-message {
-    background: #dcfce7;
-    padding: 1rem;
-    border-radius: 10px;
-    margin: 1.5rem 0;
-    border-left: 4px solid #059669;
+    background: #f0fdf4;
+    padding: 16px;
+    border-radius: 6px;
+    margin: 24px 0;
+    border-left: 4px solid var(--accent);
 }
 
 .receipt-message p {
     margin: 0;
     color: #166534;
-    font-size: 0.95rem;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 .actions { 
     display: flex; 
-    gap: 1rem; 
+    gap: 12px; 
     flex-wrap: wrap;
     justify-content: center;
+    margin-top: 32px;
 }
 
 .btn { 
-    padding: 0.85rem 1.5rem; 
-    background: linear-gradient(135deg, #d97706 0%, #059669 100%); 
+    padding: 12px 24px; 
+    background: var(--accent); 
     color: white; 
-    border-radius: 10px; 
+    border-radius: 6px; 
     text-decoration: none; 
-    font-weight: 700;
-    transition: all 0.3s;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
 }
 
 .btn:hover {
+    background: var(--accent-dark);
     transform: translateY(-2px);
-    box-shadow: 0 8px 15px rgba(217, 119, 6, 0.3);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
 }
 
 .btn.secondary { 
     background: white; 
-    color: #d97706; 
-    border: 2px solid #d97706;
+    color: var(--text); 
+    border-color: var(--border);
 }
 
 .btn.secondary:hover { 
-    background: #d97706; 
-    color: white;
+    background: var(--background); 
+    border-color: var(--accent);
 }
 
 @media (max-width: 640px) {
+    .receipt-page {
+        padding: 24px 12px;
+    }
+
     .receipt-card {
-        padding: 1.5rem;
+        padding: 24px;
     }
 
     .receipt-header h1 {
-        font-size: 1.5rem;
+        font-size: 24px;
     }
 
     .receipt-grid {
