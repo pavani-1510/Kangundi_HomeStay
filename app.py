@@ -1231,7 +1231,7 @@ def confirm_booking(booking_id):
             # Store UTR in in-memory store (for demo; in production, store in DB)
             utr_store[booking_id] = utr
             message = f'Thank you! UTR/Txn ID <b>{utr}</b> received for Booking ID <b>{booking_id}</b>. We will verify and confirm your payment shortly.'
-    return render_template('confirm_upi.html', booking_id=booking_id, message=message)
+    return render_template('confirm_upi.html', booking_id=booking_id, payment_id=booking_id, message=message)
                           
 
 # Confirm booking directly from payment page (adds to public.bookings)
