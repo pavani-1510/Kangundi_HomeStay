@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Confirm Payment for Booking {{ booking_id }}{% endblock %}
+{% block content %}
+<div class="upi-confirm-container">
+    <h2>Confirm UPI Payment</h2>
+    <p><strong>Booking ID:</strong> {{ booking_id }}</p>
+    {% if message %}
+        <div class="upi-confirm-message">{{ message|safe }}</div>
+    {% endif %}
+    <form method="post" class="upi-confirm-form">
+        <label for="utr">Enter UTR / Transaction ID:</label>
+        <input type="text" id="utr" name="utr" required placeholder="e.g. 1234567890 or ABCD1234">
+        <button type="submit">Submit</button>
+    </form>
+    <div style="margin-top:1.5rem;">
+        <a href="{{ url_for('pay_booking', booking_id=booking_id) }}" class="upi-back-link">Back to Payment</a>
+    </div>
+</div>
+<style>
+.upi-confirm-container {
+    max-width: 400px;
+    margin: 2rem auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    padding: 2rem 1.5rem;
+    text-align: center;
+}
+.upi-confirm-message {
+    background: #e6ffed;
+    color: #15803d;
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 1.2rem;
+    font-weight: 600;
+}
+.upi-confirm-form {
+    margin-top: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.upi-confirm-form label {
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+}
+.upi-confirm-form input {
+    padding: 0.7rem 1rem;
+    border: 2px solid #10b98133;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+.upi-confirm-form button {
+    padding: 0.7rem 1.2rem;
+    background: linear-gradient(90deg,#ff9500 0%,#10b981 100%);
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.upi-confirm-form button:hover {
+    background: linear-gradient(90deg,#10b981 0%,#ff9500 100%);
+}
+.upi-back-link {
+    color: #10b981;
+    font-weight: 600;
+    text-decoration: underline;
+    font-size: 1rem;
+}
+</style>
+{% endblock %}

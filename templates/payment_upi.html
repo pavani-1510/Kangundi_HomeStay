@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Pay for Booking {{ booking_id }}{% endblock %}
+{% block content %}
+<div class="upi-pay-container">
+    <h2>Pay for Booking #{{ booking_id }}</h2>
+    <div class="upi-pay-details">
+        <p><strong>Amount:</strong> ₹{{ amount }}</p>
+        <p><strong>Booking ID:</strong> {{ booking_id }}</p>
+        <img src="{{ qr_path }}" alt="UPI QR for Booking {{ booking_id }}" class="upi-qr-img">
+        <a href="{{ upi_link }}" class="upi-pay-btn">Pay via UPI App</a>
+        <p class="upi-instructions">Scan with Google Pay / PhonePe / Paytm<br>or tap the button above on mobile.</p>
+    </div>
+    <div style="margin-top:2rem;">
+        <a href="{{ url_for('confirm_booking', booking_id=booking_id) }}" class="upi-confirm-link">Already Paid? Enter UTR/Txn ID</a>
+    </div>
+</div>
+<style>
+.upi-pay-container {
+    max-width: 400px;
+    margin: 2rem auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    padding: 2rem 1.5rem;
+    text-align: center;
+}
+.upi-pay-details {
+    margin-bottom: 1.5rem;
+}
+.upi-qr-img {
+    width: 220px;
+    height: 220px;
+    margin: 1.2rem auto;
+    display: block;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    background: #fafafa;
+}
+.upi-pay-btn {
+    display: inline-block;
+    margin: 1rem 0 0.5rem 0;
+    padding: 0.8rem 1.6rem;
+    background: linear-gradient(90deg,#ff9500 0%,#10b981 100%);
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.upi-pay-btn:hover {
+    background: linear-gradient(90deg,#10b981 0%,#ff9500 100%);
+}
+.upi-instructions {
+    color: #666;
+    font-size: 0.95rem;
+    margin-top: 0.7rem;
+}
+.upi-confirm-link {
+    color: #10b981;
+    font-weight: 600;
+    text-decoration: underline;
+    font-size: 1rem;
+}
+</style>
+{% endblock %}

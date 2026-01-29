@@ -63,9 +63,14 @@
 
             <div class="payment-action">
                 <button type="button" class="btn-pay" onclick="initiateCashfree()">
-                    Pay ₹{{ pending.total_amount }}
+                    Pay ₹{{ pending.total_amount }} (Cashfree)
                 </button>
                 <a class="btn-cancel" href="{{ url_for('book_homestay', homestay_id=pending.homestay_id) }}">← Change Dates</a>
+                <hr style="margin: 2rem 0;">
+                {% set payment_id = get_or_create_payment_id() %}
+                <a href="{{ url_for('pay_booking', payment_id=payment_id, amount=pending.total_amount) }}" class="btn-pay" style="background:#ff9500;margin-top:1rem;">
+                    Pay via UPI QR (Recommended)
+                </a>
             </div>
         </div>
     </div>

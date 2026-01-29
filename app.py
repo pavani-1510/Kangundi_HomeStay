@@ -6,13 +6,49 @@ from functools import wraps
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import os
+import qrcode
+from urllib.parse import quote_plus
 import random
 import string
 import requests
 import hmac
 import hashlib
 import json
-import re
+# --- UPI Payment Confirmation Route ---
+from markupsafe import Markup
+
+
+# --- UPI QR Payment Helpers ---
+def generate_upi_link(upi_id, merchant_name, amount, note):
+    """
+    Generate a UPI payment link.
+    """
+    params = {
+        'pa': upi_id,
+        'pn': merchant_name,
+        'am': str(amount),
+        'cu': 'INR',
+        'tn': note
+    }
+    # URL encode values
+    param_str = '&'.join(f"{k}={quote_plus(str(v))}" for k, v in params.items())
+    return f"upi://pay?{param_str}"
+
+def generate_qr_code(data, booking_id):
+    """
+    Generate a QR code image for the given data and save it under static/qr/.
+    Returns the relative path to the QR image.
+    """
+    qr_dir = os.path.join('static', 'qr')
+    os.makedirs(qr_dir, exist_ok=True)
+    filename = f"upi_qr_{booking_id}.png"
+    filepath = os.path.join(qr_dir, filename)
+    img = qrcode.make(data)
+    img.save(filepath)
+    return f"/static/qr/{filename}"
+
+# In-memory store for UTRs (for demo)
+utr_store = {}
 
 # Load environment variables
 load_dotenv()
@@ -63,7 +99,10 @@ def get_user_by_email(email):
         return None
     except Exception as e:
         print(f"Error getting user by email: {e}")
-        return None
+    # Make get_or_create_payment_id available in Jinja templates (must be after function definition)
+    app.jinja_env.globals['get_or_create_payment_id'] = get_or_create_payment_id
+
+    return None
 
 def get_user_by_username(username):
     """Get user by username"""
@@ -1100,6 +1139,53 @@ def test_supabase():
     except Exception as e:
         return f"✗ Supabase error: {str(e)}"
 
+
+
+import uuid
+
+# UPI Payment route using payment_id (can be pre-booking)
+@app.route('/pay/<payment_id>', endpoint='pay_booking')
+def pay_booking(payment_id):
+    if not payment_id:
+        return "Payment ID required in URL (e.g. /pay/abc123?amount=500)", 404
+    try:
+        amount = float(request.args.get('amount', 1500))
+    except Exception:
+        amount = 1500
+    note = f"Payment ID: {payment_id}"
+    upi_id = "7075921367@ybl"
+    merchant_name = "Kangundi Homestay"
+    upi_link = generate_upi_link(upi_id, merchant_name, amount, note)
+    qr_path = generate_qr_code(upi_link, payment_id)
+    return render_template('payment_upi.html',
+                          booking_id=payment_id,
+                          amount=amount,
+                          upi_link=upi_link,
+                          qr_path=qr_path)
+
+# Helper to generate and store a payment_id in session for UPI before booking
+def get_or_create_payment_id():
+    if 'upi_payment_id' not in session:
+        session['upi_payment_id'] = str(uuid.uuid4())
+    return session['upi_payment_id']
+
+# Make get_or_create_payment_id available in Jinja templates (after definition)
+app.jinja_env.globals['get_or_create_payment_id'] = get_or_create_payment_id
+
+# UPI Payment confirmation route (for entering UTR/Txn ID)
+@app.route('/confirm/<booking_id>', methods=['GET', 'POST'], endpoint='confirm_booking')
+def confirm_booking(booking_id):
+    message = None
+    if request.method == 'POST':
+        utr = request.form.get('utr', '').strip()
+        if not utr:
+            message = 'Please enter a valid UTR/Transaction ID.'
+        else:
+            # Store UTR in in-memory store (for demo; in production, store in DB)
+            utr_store[booking_id] = utr
+            message = f'Thank you! UTR/Txn ID <b>{utr}</b> received for Booking ID <b>{booking_id}</b>. We will verify and confirm your payment shortly.'
+    return render_template('confirm_upi.html', booking_id=booking_id, message=message)
+                          
 if __name__ == '__main__':
     print("✅ Flask application ready!")
     print("🌐 Access at: http://localhost:5000")
