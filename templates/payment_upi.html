@@ -8,9 +8,10 @@
         <p><strong>Booking ID:</strong> {{ booking_id }}</p>
         <img src="{{ qr_path }}" alt="UPI QR for Booking {{ booking_id }}" class="upi-qr-img">
         <div class="upi-app-buttons">
-            <a href="{{ upi_link }}" class="upi-pay-btn" style="background:linear-gradient(90deg,#5b2cff 0%,#00e5ff 100%);margin-bottom:0.5rem;">Pay with PhonePe</a><br>
-            <a href="{{ upi_link }}" class="upi-pay-btn" style="background:linear-gradient(90deg,#4285f4 0%,#34a853 100%);margin-bottom:0.5rem;">Pay with Google Pay</a><br>
-            <a href="{{ upi_link }}" class="upi-pay-btn" style="background:linear-gradient(90deg,#00baf2 0%,#002970 100%);">Pay with Paytm</a>
+            <a href="{{ upi_link }}" class="upi-pay-btn" style="background:linear-gradient(90deg,#10b981 0%,#ff9500 100%);margin-bottom:0.5rem;">Pay with any UPI App</a>
+        </div>
+        <div class="upi-instructions" style="margin-top:1rem;">
+            <strong>Android users:</strong> If the button does not open your UPI app, please use Google Chrome and ensure you are on a secure (https) site. Alternatively, scan the QR code below with your UPI app.
         </div>
         <p class="upi-instructions">Scan the QR code or tap a button above to pay with your preferred UPI app.</p>
     </div>
