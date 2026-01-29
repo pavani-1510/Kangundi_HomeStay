@@ -7,8 +7,12 @@
         <p><strong>Amount:</strong> ₹{{ amount }}</p>
         <p><strong>Booking ID:</strong> {{ booking_id }}</p>
         <img src="{{ qr_path }}" alt="UPI QR for Booking {{ booking_id }}" class="upi-qr-img">
-        <a href="{{ upi_link }}" class="upi-pay-btn">Pay via UPI App</a>
-        <p class="upi-instructions">Scan with Google Pay / PhonePe / Paytm<br>or tap the button above on mobile.</p>
+        <div class="upi-app-buttons">
+            <a href="intent://pay?{{ upi_link|replace('upi://pay?', '') }}#Intent;scheme=upi;package=com.phonepe.app;end" class="upi-pay-btn" style="background:linear-gradient(90deg,#5b2cff 0%,#00e5ff 100%);margin-bottom:0.5rem;">Pay with PhonePe</a><br>
+            <a href="intent://pay?{{ upi_link|replace('upi://pay?', '') }}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end" class="upi-pay-btn" style="background:linear-gradient(90deg,#4285f4 0%,#34a853 100%);margin-bottom:0.5rem;">Pay with Google Pay</a><br>
+            <a href="intent://pay?{{ upi_link|replace('upi://pay?', '') }}#Intent;scheme=upi;package=net.one97.paytm;end" class="upi-pay-btn" style="background:linear-gradient(90deg,#00baf2 0%,#002970 100%);">Pay with Paytm</a>
+        </div>
+        <p class="upi-instructions">Scan the QR code or tap a button above to pay with your preferred UPI app.</p>
     </div>
     <div style="margin-top:2rem;">
         <a href="{{ url_for('confirm_booking', booking_id=booking_id) }}" class="upi-confirm-link">Already Paid? Enter UTR/Txn ID</a>
@@ -38,9 +42,8 @@
 }
 .upi-pay-btn {
     display: inline-block;
-    margin: 1rem 0 0.5rem 0;
+    margin: 0.5rem 0;
     padding: 0.8rem 1.6rem;
-    background: linear-gradient(90deg,#ff9500 0%,#10b981 100%);
     color: #fff;
     border-radius: 8px;
     font-weight: 600;

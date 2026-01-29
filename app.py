@@ -39,12 +39,14 @@ def generate_qr_code(data, booking_id):
     Generate a QR code image for the given data and save it under static/qr/.
     Returns the relative path to the QR image.
     """
-    qr_dir = os.path.join('static', 'qr')
+    # Use absolute path for static/qr directory (works on PythonAnywhere)
+    qr_dir = os.path.join(app.root_path, 'static', 'qr')
     os.makedirs(qr_dir, exist_ok=True)
     filename = f"upi_qr_{booking_id}.png"
     filepath = os.path.join(qr_dir, filename)
     img = qrcode.make(data)
     img.save(filepath)
+    # Return relative URL for browser
     return f"/static/qr/{filename}"
 
 # In-memory store for UTRs (for demo)
