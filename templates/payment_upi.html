@@ -8,10 +8,21 @@
         <p><strong>Booking ID:</strong> {{ booking_id }}</p>
         <img src="{{ qr_path }}" alt="UPI QR for Booking {{ booking_id }}" class="upi-qr-img">
         <div class="upi-app-buttons">
-            <a href="intent://pay?{{ upi_link|replace('upi://pay?', '') }}#Intent;scheme=upi;package=com.phonepe.app;end" class="upi-pay-btn" style="background:linear-gradient(90deg,#5b2cff 0%,#00e5ff 100%);margin-bottom:0.5rem;">Pay with PhonePe</a><br>
-            <a href="intent://pay?{{ upi_link|replace('upi://pay?', '') }}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end" class="upi-pay-btn" style="background:linear-gradient(90deg,#4285f4 0%,#34a853 100%);margin-bottom:0.5rem;">Pay with Google Pay</a><br>
-            <a href="intent://pay?{{ upi_link|replace('upi://pay?', '') }}#Intent;scheme=upi;package=net.one97.paytm;end" class="upi-pay-btn" style="background:linear-gradient(90deg,#00baf2 0%,#002970 100%);">Pay with Paytm</a>
+            <a href="upi://pay?{{ upi_link|replace('upi://pay?', '') }}" onclick="return openUPIApp(event, 'com.phonepe.app')" class="upi-pay-btn" style="background:linear-gradient(90deg,#5b2cff 0%,#00e5ff 100%);margin-bottom:0.5rem;">Pay with PhonePe</a><br>
+            <a href="upi://pay?{{ upi_link|replace('upi://pay?', '') }}" onclick="return openUPIApp(event, 'com.google.android.apps.nbu.paisa.user')" class="upi-pay-btn" style="background:linear-gradient(90deg,#4285f4 0%,#34a853 100%);margin-bottom:0.5rem;">Pay with Google Pay</a><br>
+            <a href="upi://pay?{{ upi_link|replace('upi://pay?', '') }}" onclick="return openUPIApp(event, 'net.one97.paytm')" class="upi-pay-btn" style="background:linear-gradient(90deg,#00baf2 0%,#002970 100%);">Pay with Paytm</a>
         </div>
+        <script>
+        function openUPIApp(e, pkg) {
+            e.preventDefault();
+            var url = e.currentTarget.getAttribute('href');
+            // Extract only the parameters after 'upi://pay?'
+            var params = url.split('upi://pay?')[1];
+            var intent = `intent://pay?${params}#Intent;scheme=upi;package=${pkg};end`;
+            window.location = intent;
+            return false;
+        }
+        </script>
         <p class="upi-instructions">Scan the QR code or tap a button above to pay with your preferred UPI app.</p>
     </div>
     <div style="margin-top:2rem;">
