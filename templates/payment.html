@@ -7,7 +7,6 @@
     <div class="payment-container">
         <div class="payment-header">
             <h1 class="payment-title">Complete Your Booking</h1>
-            <p class="payment-subtitle">Secure payment via Cashfree</p>
         </div>
 
         <div class="payment-content">
@@ -50,27 +49,23 @@
                         <span>Total Amount</span>
                         <span class="total-amount">₹{{ pending.total_amount }}</span>
                     </div>
-                </div>
-
-                <div class="payment-note">
-                    <div class="note-icon">✓</div>
-                    <div class="note-content">
-                        <p class="note-title">Secure Payment</p>
-                        <p class="note-desc">Multiple payment options available - UPI, Cards, Net Banking, Wallets</p>
-                    </div>
-                </div>
+                </div>           
             </div>
 
             <div class="payment-action">
-                <button type="button" class="btn-pay" onclick="initiateCashfree()">
-                    Pay ₹{{ pending.total_amount }} (Cashfree)
-                </button>
+                {% set payment_id = get_or_create_payment_id() %}
+                                <div style="display:flex;justify-content:center;">
+                                    <div style="background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.07);padding:2.5rem 2rem 2rem 2rem;max-width:400px;width:100%;text-align:center;margin:1.5rem 0;">
+                                        <div style="font-size:1.25rem;font-weight:700;color:#1f2937;margin-bottom:1.2rem;letter-spacing:0.5px;">Pay via UPI QR</div>
+                                        <a href="{{ url_for('pay_booking', payment_id=payment_id, amount=pending.total_amount) }}" class="btn-pay" style="background:linear-gradient(90deg,#ff9500 0%,#10b981 100%);color:#fff;font-size:1.15rem;padding:1rem 2.2rem;border-radius:10px;font-weight:700;box-shadow:0 2px 8px rgba(16,185,129,0.08);margin-top:0.5rem;transition:background 0.2s;display:inline-block;">
+                                            <span style="vertical-align:middle;">Scan &amp; Pay Now</span>
+                                        </a>
+                                        <div style="margin-top:1.1rem;color:#666;font-size:0.98rem;">You will be shown a QR code to scan with any UPI app.</div>
+                                    </div>
+                                </div>
                 <a class="btn-cancel" href="{{ url_for('book_homestay', homestay_id=pending.homestay_id) }}">← Change Dates</a>
                 <hr style="margin: 2rem 0;">
-                {% set payment_id = get_or_create_payment_id() %}
-                <a href="{{ url_for('pay_booking', payment_id=payment_id, amount=pending.total_amount) }}" class="btn-pay" style="background:#ff9500;margin-top:1rem;">
-                    Pay via UPI QR (Recommended)
-                </a>
+
             </div>
         </div>
     </div>

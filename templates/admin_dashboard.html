@@ -296,6 +296,68 @@
         </div>
     </div>
 
+    <!-- UPI Confirmations Section -->
+    <h2 class="section-header">UPI Payment Confirmations</h2>
+    {% if upi_confirmations and upi_confirmations|length > 0 %}
+    <div class="table-wrapper">
+        <table class="homestays-table">
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Txn ID</th>
+                    <th>Screenshot</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for conf in upi_confirmations %}
+                <tr>
+                    <td>{{ conf.booking_id }}</td>
+                    <td>{{ conf.txn_id or '-' }}</td>
+                    <td>
+                        {% if conf.screenshot %}
+                            <a href="/static/{{ conf.screenshot }}" target="_blank">View</a>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td>{{ conf.status|capitalize }}</td>
+                    <td>
+                        {% if conf.status != 'approved' and conf.status != 'rejected' %}
+                        <form method="post" action="{{ url_for('admin_accept_upi', booking_id=conf.booking_id) }}" style="display:inline;">
+                            <button type="submit" class="btn-edit" onclick="return confirm('Accept this payment?')">Accept</button>
+                        </form>
+                        <form method="post" action="{{ url_for('admin_reject_upi', booking_id=conf.booking_id) }}" style="display:inline;">
+                            <input type="hidden" name="reject_reason" value="">
+                            <button type="button" class="btn-delete" onclick="handleReject(this.form)">Reject</button>
+                        </form>
+                        <script>
+                        function handleReject(form) {
+                            var reason = prompt('Please enter a reason for rejection:');
+                            if (reason && reason.trim()) {
+                                form.reject_reason.value = reason.trim();
+                                form.submit();
+                            } else if (reason !== null) {
+                                alert('Rejection reason is required.');
+                            }
+                        }
+                        </script>
+                        </form>
+                        {% elif conf.status == 'rejected' %}
+                            <span style="color:#ef4444;font-weight:600;">Rejected</span>
+                        {% elif conf.status == 'approved' %}
+                            <span style="color:#10b981;font-weight:600;">Approved</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-message">
+        <p>No UPI confirmations yet.</p>
+    </div>
+    {% endif %}
     <!-- Bookings Section -->
     <h2 class="section-header">All Bookings</h2>
     {% if bookings|length > 0 %}

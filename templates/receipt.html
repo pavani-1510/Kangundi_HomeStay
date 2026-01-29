@@ -36,6 +36,18 @@
                 <span class="label">Total Amount</span>
                 <span class="value amount">₹{{ booking.total_amount }}</span>
             </div>
+            {% if booking.txn_id %}
+            <div class="receipt-item">
+                <span class="label">Transaction ID</span>
+                <span class="value">{{ booking.txn_id }}</span>
+            </div>
+            {% endif %}
+            {% if booking.screenshot %}
+            <div class="receipt-item">
+                <span class="label">Payment Screenshot</span>
+                <span class="value"><a href="/static/{{ booking.screenshot }}" target="_blank">View Screenshot</a></span>
+            </div>
+            {% endif %}
             {% if homestay %}
             <div class="receipt-item">
                 <span class="label">Owner</span>
@@ -46,10 +58,6 @@
                 <span class="value">{{ homestay.contact }}</span>
             </div>
             {% endif %}
-        </div>
-
-        <div class="receipt-message">
-            <p>Thank you for booking with us! A confirmation has been sent to your registered phone number.</p>
         </div>
 
         <div class="actions">

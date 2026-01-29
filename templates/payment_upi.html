@@ -1,22 +1,38 @@
 {% extends "base.html" %}
 {% block title %}Pay for Booking {{ booking_id }}{% endblock %}
 {% block content %}
-<div class="upi-pay-container">
-    <h2>Pay for Booking #{{ booking_id }}</h2>
-    <div class="upi-pay-details">
-        <p><strong>Amount:</strong> ₹{{ amount }}</p>
-        <p><strong>Booking ID:</strong> {{ booking_id }}</p>
-        <img src="{{ qr_path }}" alt="UPI QR for Booking {{ booking_id }}" class="upi-qr-img">
-        <div class="upi-app-buttons">
-            <a href="{{ upi_link }}" class="upi-pay-btn" style="background:linear-gradient(90deg,#10b981 0%,#ff9500 100%);margin-bottom:0.5rem;">Pay with any UPI App</a>
-        </div>
-        <div class="upi-instructions" style="margin-top:1rem;">
-            <strong>Android users:</strong> If the button does not open your UPI app, please use Google Chrome and ensure you are on a secure (https) site. Alternatively, scan the QR code below with your UPI app.
-        </div>
-        <p class="upi-instructions">Scan the QR code or tap a button above to pay with your preferred UPI app.</p>
-    </div>
-    <div style="margin-top:2rem;">
-        <a href="{{ url_for('confirm_booking', booking_id=booking_id) }}" class="upi-confirm-link">Already Paid? Enter UTR/Txn ID</a>
+<div style="display:flex;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.07);padding:2.5rem 2rem 2rem 2rem;max-width:400px;width:100%;text-align:center;margin:2rem 0;">
+        <div style="font-size:1.25rem;font-weight:700;color:#1f2937;margin-bottom:0.7rem;letter-spacing:0.5px;">Pay for Booking #{{ booking_id }}</div>
+        <div style="font-size:1.1rem;color:#10b981;font-weight:600;margin-bottom:0.5rem;">Amount: ₹{{ amount }}</div>
+        <div style="font-size:0.98rem;color:#666;margin-bottom:0.7rem;">Booking ID: {{ booking_id }}</div>
+        <img src="{{ qr_path }}" alt="UPI QR for Booking {{ booking_id }}" style="width:220px;height:220px;margin:1.2rem auto 0.7rem auto;display:block;border-radius:12px;border:1px solid #eee;box-shadow:0 2px 8px rgba(16,185,129,0.08);">
+        <div style="margin-top:0.7rem;color:#666;font-size:0.97rem;font-weight:500;">Scan this QR with any UPI app to pay.</div>
+        <form method="post" action="{{ url_for('confirm_booking_direct', booking_id=booking_id) }}" enctype="multipart/form-data" style="margin-top:1.5rem;">
+            <input type="hidden" name="amount" value="{{ amount }}">
+            <input type="hidden" name="homestay_id" value="{{ homestay_id if homestay_id is defined else '' }}">
+            <div style="margin:1.2rem 0 0.5rem 0;text-align:left;">
+                <label for="txn_id" style="font-weight:500;">Transaction ID:</label>
+                <input type="text" name="txn_id" id="txn_id" placeholder="Enter UPI Transaction ID" style="width:100%;margin-top:0.3rem;padding:0.5rem 0.7rem;border-radius:7px;border:1px solid #e5e7eb;">
+            </div>
+            <div style="margin:0.7rem 0 1.2rem 0;text-align:left;">
+                <label for="screenshot" style="font-weight:500;">Upload Payment Screenshot:</label>
+                <input type="file" name="screenshot" id="screenshot" accept="image/*" style="width:100%;margin-top:0.3rem;padding:0.5rem 0.7rem;border-radius:7px;border:1px solid #e5e7eb;">
+            </div>
+            <button type="submit" class="upi-pay-btn" style="margin-top:1.5rem;background:linear-gradient(90deg,#ff9500 0%,#10b981 100%);color:#fff;font-size:1.1rem;padding:0.9rem 2.2rem;border-radius:10px;font-weight:700;box-shadow:0 2px 8px rgba(16,185,129,0.08);transition:background 0.2s;">Confirm Booking</button>
+            <div style="margin-top:1.2rem;color:#888;font-size:0.98rem;">After confirming, your booking will show <b>waiting to be approved</b> until admin review.</div>
+        </form>
+        <script>
+        // Require at least one of screenshot or txn_id
+        document.querySelector('form').addEventListener('submit', function(e) {
+                var txn = document.getElementById('txn_id').value.trim();
+                var screenshot = document.getElementById('screenshot').files.length;
+                if (!txn && !screenshot) {
+                        alert('Please provide either a Transaction ID or upload a Payment Screenshot.');
+                        e.preventDefault();
+                }
+        });
+        </script>
     </div>
 </div>
 <style>

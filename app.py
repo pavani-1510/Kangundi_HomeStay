@@ -1,3 +1,4 @@
+
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -285,8 +286,8 @@ def get_booked_beds_for_date_range(homestay_id, from_date_str, till_date_str):
         from_date = datetime.fromisoformat(from_date_str).date()
         till_date = datetime.fromisoformat(till_date_str).date()
         
-        # Get all confirmed/paid bookings for this homestay
-        response = supabase.table('bookings').select('*').eq('homestay_id', homestay_id).in_('status', ['paid', 'confirmed']).execute()
+        # Get all approved or pending bookings for this homestay
+        response = supabase.table('bookings').select('*').eq('homestay_id', homestay_id).in_('status', ['approved', 'pending']).execute()
         
         if not response.data:
             return 0
@@ -1016,7 +1017,41 @@ def admin_dashboard():
         bookings_data = []
     
     admin_name = session.get('name', 'Admin')
-    return render_template('admin_dashboard.html', homestays=homestays_data, bookings=bookings_data, username=admin_name)
+    # Prepare UPI confirmations from bookings with txn_id or screenshot
+    upi_confirmations = []
+    for booking in bookings_data:
+        if booking.get('txn_id') or booking.get('screenshot'):
+            upi_confirmations.append({
+                'booking_id': booking.get('id'),
+                'txn_id': booking.get('txn_id'),
+                'screenshot': booking.get('screenshot'),
+                'status': booking.get('status', 'pending')
+            })
+    return render_template('admin_dashboard.html', homestays=homestays_data, bookings=bookings_data, username=admin_name, upi_confirmations=upi_confirmations)
+
+# Admin: Accept UPI payment
+@app.route('/admin/accept_upi/<int:booking_id>', methods=['POST'])
+def admin_accept_upi(booking_id):
+    try:
+        supabase.table('bookings').update({'status': 'approved'}).eq('id', booking_id).execute()
+        flash('Booking approved.', 'success')
+    except Exception as e:
+        flash(f'Error approving booking: {str(e)}', 'error')
+    return redirect(url_for('admin_dashboard'))
+
+# Admin: Reject UPI payment (with reason)
+@app.route('/admin/reject_upi/<int:booking_id>', methods=['POST'])
+def admin_reject_upi(booking_id):
+    reason = request.form.get('reject_reason', '').strip()
+    if not reason:
+        flash('Rejection reason is required.', 'error')
+        return redirect(url_for('admin_dashboard'))
+    try:
+        supabase.table('bookings').update({'status': 'rejected', 'rejection_reason': reason}).eq('id', booking_id).execute()
+        flash('Booking rejected.', 'success')
+    except Exception as e:
+        flash(f'Error rejecting booking: {str(e)}', 'error')
+    return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/homestay/add', methods=['GET', 'POST'])
 @admin_required
@@ -1155,15 +1190,25 @@ def pay_booking(payment_id):
     except Exception:
         amount = 1500
     note = f"Payment ID: {payment_id}"
-    upi_id = "7075921367@ybl"
-    merchant_name = "Kangundi Homestay"
+    upi_id = "6449049203@myapgb"
+    merchant_name = "Kangundi Nature And Adventure  Society"
     upi_link = generate_upi_link(upi_id, merchant_name, amount, note)
     qr_path = generate_qr_code(upi_link, payment_id)
+
+    # Try to get homestay_id from session['pending_booking'] if available, else from request.args
+    homestay_id = None
+    pending = session.get('pending_booking')
+    if pending and 'homestay_id' in pending:
+        homestay_id = pending['homestay_id']
+    else:
+        homestay_id = request.args.get('homestay_id')
+
     return render_template('payment_upi.html',
                           booking_id=payment_id,
                           amount=amount,
                           upi_link=upi_link,
-                          qr_path=qr_path)
+                          qr_path=qr_path,
+                          homestay_id=homestay_id)
 
 # Helper to generate and store a payment_id in session for UPI before booking
 def get_or_create_payment_id():
@@ -1188,6 +1233,90 @@ def confirm_booking(booking_id):
             message = f'Thank you! UTR/Txn ID <b>{utr}</b> received for Booking ID <b>{booking_id}</b>. We will verify and confirm your payment shortly.'
     return render_template('confirm_upi.html', booking_id=booking_id, message=message)
                           
+
+# Confirm booking directly from payment page (adds to public.bookings)
+@app.route('/confirm-booking/<booking_id>', methods=['POST'], endpoint='confirm_booking_direct')
+def confirm_booking_direct(booking_id):
+    amount = request.form.get('amount')
+    user_id = session.get('user_id')
+    user_name = session.get('name')
+    user_phone = session.get('phone_number')
+    user_email = session.get('email')
+    homestay_id = request.form.get('homestay_id')
+
+    # Try to get from_date, till_date, and nights from session['pending_booking'] if available
+    from_date = None
+    till_date = None
+    nights = None
+    pending = session.get('pending_booking')
+    if pending:
+        from_date = pending.get('from_date')
+        till_date = pending.get('till_date')
+        nights = pending.get('nights')
+    # Fallback: try to get from form (if you add these fields to the form in future)
+    if not from_date:
+        from_date = request.form.get('from_date')
+    if not till_date:
+        till_date = request.form.get('till_date')
+    if not nights:
+        nights = request.form.get('nights')
+
+    # Try to get total_amount from session['pending_booking'] if available
+    total_amount = None
+    if pending:
+        total_amount = pending.get('total_amount')
+    if not total_amount:
+        total_amount = request.form.get('total_amount')
+
+    # Optional transaction ID
+    txn_id = request.form.get('txn_id')
+    # Optional screenshot upload
+    screenshot_filename = None
+    if 'screenshot' in request.files:
+        screenshot = request.files['screenshot']
+        if screenshot and screenshot.filename:
+            # Save screenshot to static/upi_screenshots/ with a unique name
+            from werkzeug.utils import secure_filename
+            import os
+            upload_dir = os.path.join('static', 'upi_screenshots')
+            os.makedirs(upload_dir, exist_ok=True)
+            ext = os.path.splitext(screenshot.filename)[1]
+            unique_name = f"{booking_id}_{int(datetime.now().timestamp())}{ext}"
+            file_path = os.path.join(upload_dir, secure_filename(unique_name))
+            screenshot.save(file_path)
+            screenshot_filename = file_path.replace('static/', '')  # Store relative path for template use
+
+    booking_data = {
+        'homestay_id': homestay_id,
+        'amount': amount,
+        'status': 'pending',
+        'created_at': datetime.now(timezone.utc).isoformat(),
+        'user_id': user_id,
+        'user_name': user_name,
+        'user_phone': user_phone,
+        'user_email': user_email,
+        'from_date': from_date,
+        'till_date': till_date,
+        'nights': nights,
+        'total_amount': total_amount,
+        'txn_id': txn_id,
+        'screenshot': screenshot_filename
+        # Add other required fields if needed
+    }
+    try:
+        response = supabase.table('bookings').insert(booking_data).execute()
+        # Get the new booking ID from the response
+        new_booking_id = None
+        if response and response.data and len(response.data) > 0:
+            new_booking_id = response.data[0].get('id')
+        flash('Booking confirmed and sent for admin approval!', 'success')
+        if new_booking_id:
+            return redirect(url_for('receipt', booking_id=new_booking_id))
+    except Exception as e:
+        flash(f'Error saving booking: {str(e)}', 'error')
+    return redirect(url_for('home'))
+
+    
 if __name__ == '__main__':
     print("✅ Flask application ready!")
     print("🌐 Access at: http://localhost:5000")
