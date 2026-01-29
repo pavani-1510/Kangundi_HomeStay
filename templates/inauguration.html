@@ -3,378 +3,156 @@
 {% block title %}Inauguration - Kangundi HomeStay{% endblock %}
 
 {% block content %}
+<!-- Premium Inauguration Hero Section -->
 <div class="inauguration-hero">
-    <!-- Background Image with Dark Overlay -->
     <div class="hero-background">
         <img src="{{ url_for('static', filename='images/kangundi_3.jpeg') }}" alt="Kangundi HomeStay Estate" class="hero-image">
         <div class="overlay"></div>
+        <!-- Gold Sparkle Animation Layer -->
+        <canvas id="sparkle-canvas"></canvas>
     </div>
-    
-    <!-- Centered Ceremonial Content -->
     <div class="hero-content">
-        <!-- Formal Divider -->
         <div class="ceremony-divider"></div>
-        
-        <!-- Inauguration Announcement (Primary) -->
         <div class="inauguration-section">
-            <p class="inaug-designation">OFFICIALLY INAUGURATED</p>
-            <p class="inaug-by">by the Hon'ble Chief Minister of Andhra Pradesh</p>
-            <p class="inaug-authority">Nara Chandra Babu Naidu · 30/01/2026</p>
+            <p class="inaug-designation">INAUGURATION CEREMONY</p>
+            <p class="inaug-by">To be inaugurated by the Hon'ble Chief Minister of Andhra Pradesh</p>
+            <p class="inaug-authority">Nara Chandra Babu Naidu &mdash; 30/01/2026</p>
         </div>
-        
-        <!-- Formal Divider -->
         <div class="ceremony-divider"></div>
-        
-        <!-- Estate Name (Secondary) -->
         <h1 class="estate-name">Kangundi HomeStay</h1>
         <p class="estate-descriptor">A Heritage Estate of Historical Significance</p>
-        
-        <!-- Formal Divider -->
+        <p class="estate-descriptor" style="font-size:1.05rem; color:#fffbe6; margin-top:0.5rem; font-style:normal;">We warmly await your presence for this momentous occasion.</p>
         <div class="ceremony-divider small"></div>
-        
-        <!-- CTA - De-emphasized -->
-        <button class="estate-cta" onclick="enterEstate()">Enter the Estate</button>
+        <button type="button" class="ribbon-img-container" onclick="startCeremony()" aria-label="Start Ceremony">
+            <img src="{{ url_for('static', filename='images/ribbon.png') }}" alt="Ceremonial Ribbon" class="ribbon-img">
+        </button>
     </div>
 </div>
-
-<!-- Theater Curtain Element for Reveal Animation -->
 <div class="theater-curtain"></div>
+{% include 'home.html' %}
 
+<!-- Premium Stylesheet -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Montserrat:wght@400;600&display=swap">
+<link rel="stylesheet" href="{{ url_for('static', filename='premium_inauguration.css') }}">
 <style>
+.inauguration-hero {
+    transition: transform 2s cubic-bezier(0.77,0,0.18,1), opacity 2s cubic-bezier(0.77,0,0.18,1);
+}
+.inauguration-hero.slide-up-1 {
+    transform: translateY(-30vh);
+    opacity: 0.9;
+    transition: transform 2s cubic-bezier(0.77,0,0.18,1), opacity 2s cubic-bezier(0.77,0,0.18,1);
+}
+.inauguration-hero.slide-up-2 {
+    transform: translateY(-120vh);
+    opacity: 0.7;
+    transition: transform 2.5s cubic-bezier(0.77,0,0.18,1), opacity 2.5s cubic-bezier(0.77,0,0.18,1);
+}
+
+.inauguration-hero {
+    transition: transform 1.2s cubic-bezier(0.77,0,0.18,1), opacity 1.2s cubic-bezier(0.77,0,0.18,1);
+}
+.inauguration-hero.slide-up {
+    transform: translateY(-120vh);
+    opacity: 0.7;
+}
 html, body {
     height: 100%;
     overflow: hidden;
     margin: 0;
     padding: 0;
+    background: #18140e;
+    cursor: url('{{ url_for('static', filename='images/cursor.png') }}'), auto;
 }
+nav, footer { display: none !important; }
+.hero-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+.hero-image { width: 100%; height: 100%; object-fit: cover; display: block; filter: blur(2.5px) brightness(0.7); }
+.overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.65) 100%); z-index: 2; }
+#sparkle-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
+.theater-curtain { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%); z-index: 100; transform: translateY(-100%); transition: transform 1.5s cubic-bezier(0.25, 0.1, 0.25, 1); box-shadow: 0 10px 50px rgba(0,0,0,0.5); }
+.theater-curtain.lift { transform: translateY(0); }
 
-/* Hide navbar for formal presentation */
-nav {
-    display: none !important;
-}
 
-/* Hide footer for full-screen inauguration page */
-footer {
-    display: none !important;
-}
-
-/* Theater Curtain Animation */
-.theater-curtain {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%);
-    z-index: 100;
-    transform: translateY(-100%);
-    transition: transform 1.5s cubic-bezier(0.25, 0.1, 0.25, 1);
-    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
-    clip-path: polygon(
-        0 0,
-        100% 0,
-        100% calc(100% - 80px),
-        96% calc(100% - 50px),
-        92% calc(100% - 75px),
-        88% calc(100% - 45px),
-        84% calc(100% - 70px),
-        80% calc(100% - 50px),
-        76% calc(100% - 75px),
-        72% calc(100% - 45px),
-        68% calc(100% - 70px),
-        64% calc(100% - 50px),
-        60% calc(100% - 75px),
-        56% calc(100% - 45px),
-        52% calc(100% - 70px),
-        48% calc(100% - 50px),
-        44% calc(100% - 75px),
-        40% calc(100% - 45px),
-        36% calc(100% - 70px),
-        32% calc(100% - 50px),
-        28% calc(100% - 75px),
-        24% calc(100% - 45px),
-        20% calc(100% - 70px),
-        16% calc(100% - 50px),
-        12% calc(100% - 75px),
-        8% calc(100% - 45px),
-        4% calc(100% - 70px),
-        0 calc(100% - 50px)
-    );
-}
-
-.theater-curtain.lift {
-    transform: translateY(0);
-}
-
-/* Content lift animation */
-.hero-content.lifting {
-    animation: contentLift 2s ease-out forwards;
-}
-
-@keyframes contentLift {
-    0% {
-        transform: translateY(0);
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(-30px);
-        opacity: 0;
-    }
-}
-
-.inauguration-hero {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    background: #000;
-}
-
-/* Hero Background with Image and Overlay */
-.hero-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-}
-
-.hero-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    filter: blur(3px);
-}
-
-.overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.55) 60%, rgba(0, 0, 0, 0.65) 100%), linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.55) 50%, rgba(0, 0, 0, 0.65) 100%);
-    z-index: 2;
-}
-
-/* Centered Content */
-.hero-content {
-    position: relative;
-    z-index: 10;
-    text-align: center;
-    max-width: 650px;
-    width: 90%;
-    margin: 0 auto;
-    padding: 3rem 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2.5rem;
-}
-
-/* Formal Divider Lines */
-.ceremony-divider {
-    width: 80px;
-    height: 2px;
-    background: rgba(255, 255, 255, 0.4);
-    margin: 0 auto;
-}
-
-.ceremony-divider.small {
-    width: 40px;
-    height: 1px;
-}
-
-/* Inauguration Section - Primary Content */
-.inauguration-section {
-    margin: 1rem 0;
-}
-
-.inaug-designation {
-    font-size: 0.85rem;
-    color: #c9a961;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    font-weight: 600;
-    font-family: 'Georgia', 'Garamond', serif;
-    margin: 0 0 1rem 0;
-    line-height: 1.8;
-}
-
-.inaug-by {
-    font-size: 1.35rem;
-    color: #ffffff;
-    font-family: 'Georgia', 'Garamond', serif;
-    font-weight: 500;
-    letter-spacing: 1px;
-    margin: 0 0 0.75rem 0;
-    line-height: 1.7;
-}
-
-.inaug-authority {
-    font-size: 1.1rem;
-    color: #b4b8c0;
-    font-family: 'Georgia', 'Garamond', serif;
-    font-weight: 400;
-    letter-spacing: 1.5px;
-    margin: 0;
-    line-height: 1.6;
-}
-
-/* Estate Name - Secondary Content */
-.estate-name {
-    font-size: 3.5rem;
-    font-weight: 900;
-    color: #ffffff;
-    margin: 0;
-    line-height: 1.2;
-    letter-spacing: -0.5px;
-    font-family: 'Georgia', 'Garamond', serif;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
-.estate-descriptor {
-    font-size: 1rem;
-    color: #a8acb8;
-    font-family: 'Georgia', 'Garamond', serif;
-    font-weight: 300;
-    letter-spacing: 1px;
-    margin: 0.75rem 0 0 0;
-    font-style: italic;
-    line-height: 1.6;
-}
-
-/* CTA Button - De-emphasized, Formal */
-.estate-cta {
-    margin-top: 1rem;
-    padding: 0.95rem 2.5rem;
-    background: transparent;
-    color: #f3f4f6;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 2px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.4s ease;
-    text-transform: uppercase;
-    font-family: 'Georgia', 'Garamond', serif;
-}
-
-.estate-cta:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.7);
-    color: #ffffff;
-}
-
-.estate-cta:active {
-    background: rgba(255, 255, 255, 0.12);
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .estate-name {
-        font-size: 2.8rem;
-    }
-    
-    .inaug-by {
-        font-size: 1.2rem;
-    }
-    
-    .estate-descriptor {
-        font-size: 0.95rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .hero-content {
-        gap: 2rem;
-        padding: 2rem 1.5rem;
-    }
-    
-    .estate-name {
-        font-size: 2.2rem;
-    }
-    
-    .inaug-by {
-        font-size: 1.1rem;
-    }
-    
-    .inaug-authority {
-        font-size: 1rem;
-    }
-    
-    .estate-descriptor {
-        font-size: 0.9rem;
-    }
-    
-    .estate-cta {
-        padding: 0.85rem 2rem;
-        font-size: 0.9rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .hero-content {
-        gap: 1.75rem;
-        padding: 1.5rem 1rem;
-        max-width: 100%;
-    }
-    
-    .estate-name {
-        font-size: 1.6rem;
-    }
-    
-    .inaug-designation {
-        font-size: 0.8rem;
-        letter-spacing: 2px;
-    }
-    
-    .inaug-by {
-        font-size: 0.95rem;
-    }
-    
-    .inaug-authority {
-        font-size: 0.9rem;
-        letter-spacing: 0.5px;
-    }
-    
-    .estate-descriptor {
-        font-size: 0.85rem;
-        letter-spacing: 0.5px;
-    }
-    
-    .ceremony-divider {
-        width: 60px;
-    }
-    
-    .estate-cta {
-        padding: 0.8rem 1.75rem;
-        font-size: 0.85rem;
-        letter-spacing: 0.8px;
-    }
-}
 </style>
 
 <script>
-function enterEstate() {
-    // Get curtain element
-    const curtain = document.querySelector('.theater-curtain');
-    
-    // Lift the curtain up with curves
-    curtain.classList.add('lift');
-    
-    // Navigate to home as curtain lifts
-    setTimeout(() => {
-        window.location.href = '/home';
-    }, 1600);
+// Gold Sparkle Animation
+function startCeremony() {
+    // Animate the hero sliding up in two slower stages
+    var hero = document.querySelector('.inauguration-hero');
+    if (!hero.classList.contains('slide-up-1') && !hero.classList.contains('slide-up-2')) {
+        hero.classList.add('slide-up-1');
+        setTimeout(function() {
+            hero.classList.remove('slide-up-1');
+            hero.classList.add('slide-up-2');
+            setTimeout(function() {
+                hero.style.display = 'none';
+            }, 4000); // second stop: 4s
+        }, 2000); // first stop: 2s
+    }
 }
+
+window.addEventListener('DOMContentLoaded', function() {
+  const canvas = document.getElementById('sparkle-canvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    let sparkles = [];
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    function createSparkle() {
+        return {
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * 1.2 + 0.8,
+            o: Math.random() * 0.5 + 0.5,
+            d: Math.random() * 0.5 + 0.5,
+            t: Math.random() * 360
+        };
+    }
+    function drawSparkles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let s of sparkles) {
+            ctx.save();
+            ctx.globalAlpha = s.o * (0.7 + 0.3 * Math.sin(Date.now()/400 + s.t));
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r, 0, 2 * Math.PI);
+            ctx.fillStyle = 'rgba(201, 169, 97, 0.85)';
+            ctx.shadowColor = '#fffbe6';
+            ctx.shadowBlur = 8;
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+    function animate() {
+        for (let s of sparkles) {
+            s.y += s.d;
+            if (s.y > canvas.height) {
+                s.x = Math.random() * canvas.width;
+                s.y = -5;
+            }
+        }
+        drawSparkles();
+        requestAnimationFrame(animate);
+    }
+    function initSparkles() {
+        sparkles = [];
+        for (let i = 0; i < Math.max(60, window.innerWidth/20); i++) {
+            sparkles.push(createSparkle());
+        }
+    }
+    window.addEventListener('resize', () => {
+        resizeCanvas();
+        initSparkles();
+    });
+    resizeCanvas();
+    initSparkles();
+    animate();
+  }
+});
+
+
 </script>
 
 {% endblock %}
