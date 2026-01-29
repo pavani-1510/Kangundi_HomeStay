@@ -475,18 +475,27 @@ def signup():
             return redirect(url_for('signup'))
 
         try:
-            # Check if user already exists in public.users table
-            existing = supabase.table('users').select('*').eq('email', email).execute()
-            if existing.data:
+            # Check if user already exists in public.users table (email)
+            existing_email = supabase.table('users').select('*').eq('email', email).execute()
+            if existing_email.data:
                 flash('This email is already registered! Please login.', 'error')
                 return redirect(url_for('login'))
 
-            # Generate and send OTP
+            # Check if user already exists in public.users table (phone number)
+            existing_phone = supabase.table('users').select('*').eq('phone_number', phone_number).execute()
+            if existing_phone.data:
+                flash('This phone number is already registered! Please login or use a different number.', 'error')
+                return redirect(url_for('signup'))
+
+
+            # Store password hash in session for use after OTP
+            password_hash = generate_password_hash(password)
             otp = generate_otp()
             session['signup_otp'] = otp
             session['signup_email'] = email
             session['signup_name'] = name
             session['signup_phone'] = phone_number
+            session['signup_password_hash'] = password_hash
 
             if send_otp_via_email(email, otp):
                 flash(f'OTP sent to {email}', 'success')
@@ -509,20 +518,12 @@ def verify_signup_otp():
 
     if request.method == 'POST':
         otp = request.form.get('otp')
-        password = request.form.get('password', '').strip()
-        confirm_password = request.form.get('confirm_password', '').strip()
         if otp == session.get('signup_otp'):
             email = session.get('signup_email')
             name = session.get('signup_name')
             phone_number = session.get('signup_phone')
-            if not password or not confirm_password:
-                flash('Please enter and confirm your password.', 'error')
-                return render_template('verify_otp.html', page_type='signup')
-            if password != confirm_password:
-                flash('Passwords do not match!', 'error')
-                return render_template('verify_otp.html', page_type='signup')
+            password_hash = session.get('signup_password_hash', '')
             try:
-                password_hash = generate_password_hash(password)
                 result = supabase.table('users').insert({
                     'email': email,
                     'name': name,
@@ -537,24 +538,20 @@ def verify_signup_otp():
                     session['name'] = name
                     session['is_admin'] = user.get('is_admin', False)
                     session.permanent = True
-                    
                     session.pop('signup_otp', None)
                     session.pop('signup_phone', None)
                     session.pop('signup_name', None)
-                    
+                    session.pop('signup_password_hash', None)
                     flash(f'Welcome {name}! Your account has been created.', 'success')
-                    
                     # Redirect admin to admin dashboard
                     if session.get('is_admin', False):
                         return redirect(url_for('admin_dashboard'))
-                    
                     return redirect(url_for('home'))
             except Exception as e:
                 print(f"User creation error: {e}")
                 flash('Error creating account. Please try again.', 'error')
         else:
             flash('Invalid OTP. Please try again.', 'error')
-    
     return render_template('verify_otp.html', page_type='signup')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -762,6 +759,7 @@ def book_homestay(homestay_id):
             'till_date': till_date,
             'nights': nights,
             'beds_requested': beds_requested,
+            'beds' : beds_requested,
             'price_per_bed_per_night': price_per_bed_per_night,
             'total_amount': total_amount,
             'homestay_owner': homestay.get('owner'),
@@ -802,12 +800,22 @@ def payment():
     if request.method == 'POST':
         payment_ref = f"DEMO-{random.randint(100000, 999999)}"
         user_name = session.get('name', 'User')
+        # Ensure we get the correct number of beds booked from session
+        # Try to get the correct number of beds booked, force to int, and log for debug
+        beds_booked = pending.get('beds_requested')
+        if beds_booked is None:
+            beds_booked = pending.get('beds')
+        try:
+            beds_booked = int(beds_booked)
+        except Exception:
+            beds_booked = 1
+        print(f"DEBUG: beds_booked to save = {beds_booked} (pending: {pending})")
         booking_payload = {
             'homestay_id': pending['homestay_id'],
             'from_date': pending['from_date'],
             'till_date': pending['till_date'],
             'nights': pending['nights'],
-            'beds_booked': pending.get('beds_requested', 1),
+            'beds_booked': beds_booked,
             'total_amount': pending['total_amount'],
             'status': 'paid',
             'payment_reference': payment_ref,
@@ -1286,6 +1294,19 @@ def confirm_booking_direct(booking_id):
             screenshot.save(file_path)
             screenshot_filename = file_path.replace('static/', '')  # Store relative path for template use
 
+    # Try to get beds_booked from session or form
+    beds_booked = None
+    if pending:
+        beds_booked = pending.get('beds_requested')
+        if beds_booked is None:
+            beds_booked = pending.get('beds')
+    if beds_booked is None:
+        beds_booked = request.form.get('beds_requested')
+    try:
+        beds_booked = int(beds_booked)
+    except Exception:
+        beds_booked = 1
+
     booking_data = {
         'homestay_id': homestay_id,
         'amount': amount,
@@ -1300,7 +1321,8 @@ def confirm_booking_direct(booking_id):
         'nights': nights,
         'total_amount': total_amount,
         'txn_id': txn_id,
-        'screenshot': screenshot_filename
+        'screenshot': screenshot_filename,
+        'beds_booked': beds_booked
         # Add other required fields if needed
     }
     try:

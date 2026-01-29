@@ -15,12 +15,16 @@
 
         {% if bookings %}
         <div class="bookings-grid">
-            {% for booking in bookings %}
+        {% for booking in bookings %}
             <div class="booking-card">
                 <div class="card-header">
                     {% if booking.homestay %}
                     <h3 class="property-name">{{ booking.homestay.owner }}</h3>
-                    <span class="status-badge">{{ booking.status | upper }}</span>
+                    {% if booking.status and booking.status|lower == 'rejected' %}
+                        <span class="status-badge rejected">{{ booking.status | upper }}</span>
+                    {% else %}
+                        <span class="status-badge">{{ booking.status | upper }}</span>
+                    {% endif %}
                     {% else %}
                     <h3 class="property-name">Booking #{{ booking.id }}</h3>
                     <span class="status-badge unavailable">UNAVAILABLE</span>
@@ -66,11 +70,9 @@
                     </div>
                 </div>
 
-
-                    <a href="{{ url_for('receipt', booking_id=booking.id) }}" class="btn-receipt">View Receipt</a>
-                </div>
+                <a href="{{ url_for('receipt', booking_id=booking.id) }}" class="btn-receipt">View Receipt</a>
             </div>
-            {% endfor %}
+        {% endfor %}
         </div>
         {% else %}
         <div class="empty-state">
@@ -152,8 +154,25 @@
 
 .bookings-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px 28px;
+    justify-content: center;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto 32px auto;
+    min-height: 200px;
+}
+
+@media (max-width: 900px) {
+    .bookings-grid {
+        grid-template-columns: 1fr;
+        max-width: 100%;
+    }
+}
+
+/* Fallback: If grid fails, use flex */
+.bookings-grid {
+    display: grid;
 }
 
 .booking-card {
@@ -201,8 +220,16 @@
     letter-spacing: 0.5px;
 }
 
+
 .status-badge.unavailable {
     background: #ef4444;
+}
+
+.status-badge.rejected {
+    background: #ef4444;
+    color: #fff;
+    border: 1px solid #b91c1c;
+    box-shadow: 0 1px 4px rgba(239,68,68,0.08);
 }
 
 .card-content {
@@ -356,6 +383,13 @@
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
 }
 
+@media (max-width: 1024px) {
+    .bookings-grid {
+        max-width: 100%;
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
 @media (max-width: 768px) {
     .bookings-page {
         padding: 24px 12px;
@@ -373,6 +407,7 @@
 
     .bookings-grid {
         grid-template-columns: 1fr;
+        max-width: 100%;
     }
 
     .info-grid {

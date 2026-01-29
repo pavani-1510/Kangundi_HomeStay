@@ -322,6 +322,7 @@
                     </td>
                     <td>{{ conf.status|capitalize }}</td>
                     <td>
+                        <button class="btn-edit" onclick="showBookingModal({{ conf.booking_id }})">View</button>
                         {% if conf.status != 'approved' and conf.status != 'rejected' %}
                         <form method="post" action="{{ url_for('admin_accept_upi', booking_id=conf.booking_id) }}" style="display:inline;">
                             <button type="submit" class="btn-edit" onclick="return confirm('Accept this payment?')">Accept</button>
@@ -353,6 +354,43 @@
             </tbody>
         </table>
     </div>
+    <!-- Render all UPI modals after the table to avoid table layout issues -->
+    {% for conf in upi_confirmations %}
+        {% set booking = (bookings | selectattr('id', 'equalto', conf.booking_id) | list | first) %}
+        <div id="booking-modal-{{ conf.booking_id }}" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; background:rgba(17,24,39,0.45);">
+            <div style="display:flex; align-items:center; justify-content:center; height:100vh;">
+                <div style="background:white; border-radius:14px; max-width:420px; width:92vw; box-shadow:0 8px 32px rgba(31,41,55,0.18); padding:32px 28px 24px 28px; position:relative; animation:modalFadeIn 0.2s;">
+                    <button onclick="closeBookingModal({{ conf.booking_id }})" style="position:absolute; top:14px; right:18px; background:var(--background); border:none; border-radius:50%; width:32px; height:32px; font-size:22px; color:#888; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.07); transition:background 0.2s;">
+                        &times;
+                    </button>
+                    <h3 style="margin-bottom:18px; color:var(--accent); font-size:22px; font-weight:700; text-align:center; letter-spacing:0.5px;">Booking Details</h3>
+                    <table style="width:100%; border-collapse:separate; border-spacing:0 6px;">
+                        <tr><th style="text-align:left; padding:6px 0; color:var(--secondary); font-size:13px; font-weight:600; width:44%;">Booking ID</th><td style="padding:6px 0; color:var(--text); font-size:15px; font-weight:500;">{{ booking.id if booking else conf.booking_id }}</td></tr>
+                        <tr><th style="text-align:left; padding:6px 0; color:var(--secondary); font-size:13px; font-weight:600;">User</th><td style="padding:6px 0; color:var(--text); font-size:15px; font-weight:500;">{{ booking.user_name if booking else '-' }}</td></tr>
+                        {% if booking and booking.homestay %}
+                          <tr><th style="text-align:left; padding:6px 0; color:var(--secondary); font-size:13px; font-weight:600;">Owner</th><td style="padding:6px 0; color:var(--text); font-size:15px; font-weight:500;">{{ booking.homestay.owner }}</td></tr>
+                          <tr><th style="text-align:left; padding:6px 0; color:var(--secondary); font-size:13px; font-weight:600;">Rooms</th><td style="padding:6px 0; color:var(--text); font-size:15px; font-weight:500;">{{ booking.homestay.rooms }}</td></tr>
+                          <tr><th style="text-align:left; padding:6px 0; color:var(--secondary); font-size:13px; font-weight:600;">Beds</th><td style="padding:6px 0; color:var(--text); font-size:15px; font-weight:500;">{{ booking.homestay.beds }}</td></tr>
+                          <tr><th style="text-align:left; padding:6px 0; color:var(--secondary); font-size:13px; font-weight:600;">Price</th><td style="padding:6px 0; color:var(--accent); font-size:15px; font-weight:700;">₹{{ booking.homestay.price }}</td></tr>
+                          <tr><th style="text-align:left; padding:6px 0; color:var(--secondary); font-size:13px; font-weight:600;">Contact</th><td style="padding:6px 0; color:var(--text); font-size:15px; font-weight:500;">{{ booking.homestay.contact }}</td></tr>
+                        {% elif booking %}
+                          <tr><th style="text-align:left; padding:6px 0; color:var(--danger); font-size:13px; font-weight:600;" colspan="2"><span style="font-weight:600;">Homestay details unavailable</span></th></tr>
+                        {% else %}
+                          <tr><th style="text-align:left; padding:6px 0; color:var(--danger); font-size:13px; font-weight:600;" colspan="2"><span style="font-weight:600;">Booking details unavailable</span></th></tr>
+                        {% endif %}
+                        <tr><th style="text-align:left; padding:6px 0; color:var(--secondary); font-size:13px; font-weight:600;">From Date</th><td style="padding:6px 0; color:var(--text); font-size:15px; font-weight:500;">{{ booking.from_date if booking else '-' }}</td></tr>
+                        <tr><th style="text-align:left; padding:6px 0; color:var(--secondary); font-size:13px; font-weight:600;">Till Date</th><td style="padding:6px 0; color:var(--text); font-size:15px; font-weight:500;">{{ booking.till_date if booking else '-' }}</td></tr>
+                    </table>
+                </div>
+            </div>
+            <style>
+            @keyframes modalFadeIn {
+                from { opacity: 0; transform: translateY(30px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            </style>
+        </div>
+    {% endfor %}
     {% else %}
     <div class="empty-message">
         <p>No UPI confirmations yet.</p>
@@ -365,6 +403,7 @@
         <table class="homestays-table">
             <thead>
                 <tr>
+                    <th>Booking ID</th>
                     <th>User</th>
                     <th>Owner</th>
                     <th>Rooms</th>
@@ -378,6 +417,7 @@
             <tbody>
                 {% for booking in bookings %}
                 <tr>
+                    <td>{{ booking.id }}</td>
                     <td>{{ booking.user_name }}</td>
                     {% if booking.homestay %}
                     <td>{{ booking.homestay.owner }}</td>
@@ -394,6 +434,14 @@
                 {% endfor %}
             </tbody>
         </table>
+        <script>
+        function showBookingModal(id) {
+            document.getElementById('booking-modal-' + id).style.display = 'flex';
+        }
+        function closeBookingModal(id) {
+            document.getElementById('booking-modal-' + id).style.display = 'none';
+        }
+        </script>
     </div>
     {% else %}
     <div class="empty-message">
