@@ -150,6 +150,12 @@ window.addEventListener('load', function() {
         playSound('ribbonCutSound');
         if (animating) return;
         animating = true;
+        // If admin, update inauguration status in DB
+        fetch('/set-inauguration-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'yes' })
+        }).then(()=>{}).catch(()=>{});
         // Fade out hero
         if (hero) {
             hero.style.transition = 'opacity 1.1s cubic-bezier(0.77,0,0.18,1)';

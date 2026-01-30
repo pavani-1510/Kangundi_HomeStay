@@ -1,4 +1,5 @@
 
+
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -1338,7 +1339,75 @@ def confirm_booking_direct(booking_id):
         flash(f'Error saving booking: {str(e)}', 'error')
     return redirect(url_for('home'))
 
-    
+# --- Inauguration Table Setup and Access Control ---
+def ensure_inauguration_table():
+    """Ensure inauguration table exists with a status column. Only runs if not present."""
+    try:
+        # Try to select from inauguration table
+        result = supabase.table('inauguration').select('*').limit(1).execute()
+        # If no rows, insert default row
+        if not result.data:
+            supabase.table('inauguration').insert({'status': 'no'}).execute()
+    except Exception as e:
+        # Table might not exist, try to create it (Supabase: must be done via dashboard or migration)
+        print("[WARN] Could not verify/create inauguration table. Please ensure it exists in Supabase with a 'status' column (text, yes/no). Error:", e)
+
+def get_inauguration_status():
+    try:
+        result = supabase.table('inauguration').select('status').limit(1).execute()
+        if result.data and len(result.data) > 0:
+            return result.data[0]['status']
+    except Exception as e:
+        print("[WARN] Could not fetch inauguration status:", e)
+    return 'yes'  # Default to normal if error
+
+# Ensure table exists at startup
+ensure_inauguration_table()
+
+# Restrict access based on inauguration status
+@app.before_request
+def restrict_for_inauguration():
+    allowed_endpoints = {'login', 'static', 'inauguration_login', 'request_login_otp', 'logout'}
+    # Only admins can access admin_dashboard and inauguration
+    admin_only_endpoints = {'admin_dashboard', 'inauguration'}
+    if request.endpoint in admin_only_endpoints and not session.get('is_admin', False):
+        return render_template('coming_soon.html'), 403
+    # If inauguration status is 'no', restrict home page for normal users
+    if request.endpoint == 'home' and not session.get('is_admin', False):
+        status = get_inauguration_status()
+        if status == 'no':
+            return render_template('coming_soon.html'), 403
+    if request.endpoint in allowed_endpoints or request.endpoint is None:
+        return
+    # Allow admin users full access
+    if session.get('is_admin', False):
+        return
+    status = get_inauguration_status()
+    if status == 'no':
+        # Only allow allowed_endpoints, others show coming soon
+        return render_template('coming_soon.html'), 403
+
+
+# Route to set inauguration status (admin only, POST)
+@app.route('/set-inauguration-status', methods=['POST'])
+@admin_required
+def set_inauguration_status():
+    data = request.get_json(force=True)
+    status = data.get('status', 'yes')
+    try:
+        # Update the first row (should only be one row)
+        result = supabase.table('inauguration').select('id').limit(1).execute()
+        if result.data and len(result.data) > 0:
+            row_id = result.data[0]['id']
+            supabase.table('inauguration').update({'status': status}).eq('id', row_id).execute()
+        else:
+            supabase.table('inauguration').insert({'status': status}).execute()
+        return {'success': True, 'status': status}
+    except Exception as e:
+        print('Error updating inauguration status:', e)
+        return {'success': False, 'error': str(e)}, 500
+
+
 if __name__ == '__main__':
     print("✅ Flask application ready!")
     print("🌐 Access at: http://localhost:5000")

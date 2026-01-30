@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Coming Soon - Kangundi HomeStay{% endblock %}
+{% block content %}
+<div class="coming-soon-container" style="min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <h1 style="font-size:3rem;color:#bfa14a;margin-bottom:1.5rem;">Coming Soon</h1>
+    <p style="font-size:1.3rem;color:#fffbe6;max-width:500px;text-align:center;">We're preparing something special for you! Please check back after the inauguration. For now, only the home, login, inauguration, and admin dashboard are accessible.</p>
+    <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Kangundi Logo" style="margin-top:2rem;width:120px;border-radius:16px;box-shadow:0 4px 24px #bfa14a55;">
+</div>
+{% endblock %}
