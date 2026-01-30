@@ -4,11 +4,14 @@
 
 {% block content %}
 <!-- Premium Inauguration Hero Section -->
+<canvas id="goldSnowCanvas" class="gold-snow-canvas"></canvas>
 <div class="inauguration-hero">
     <div class="hero-background">
-        <img src="{{ url_for('static', filename='images/kangundi_3.jpeg') }}" alt="Kangundi HomeStay Estate" class="hero-image">
+        <img src="{{ url_for('static', filename='images/kangundi_3.jpeg') }}" alt="Kangundi HomeStay Estate" class="hero-image dark-blur-bg">
         <div class="overlay"></div>
-        <!-- No sparkle, no canvas for premium effect -->
+        <!-- Audio elements for sound effects -->
+        <audio id="goldSparkleSound" src="{{ url_for('static', filename='sounds/gold_sparkle.mp3') }}" preload="auto" loop></audio>
+        <audio id="ribbonCutSound" src="{{ url_for('static', filename='sounds/ribbon_cut.mp3') }}" preload="auto"></audio>
     </div>
     <div class="hero-content">
         <div class="ceremony-divider"></div>
@@ -33,17 +36,118 @@
 <!-- Premium Stylesheet -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Montserrat:wght@400;600&display=swap">
 <link rel="stylesheet" href="{{ url_for('static', filename='premium_inauguration.css') }}">
-</script>
-</script>
-</script>
+
+<style>
+.gold-snow-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+    pointer-events: none;
+    z-index: 10000;
+    opacity: 0.85;
+}
+/* Make hero image dark and blurred */
+.dark-blur-bg {
+    filter: blur(10px) brightness(0.35) !important;
+}
+/* Hide header and footer only for this page */
+header, footer, nav { display: none !important; }
+</style>
+
 <script>
+// --- Gold Snowfall Effect (Premium) ---
+function startGoldSnow() {
+    const canvas = document.getElementById('goldSnowCanvas');
+    if (!canvas) return;
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    const ctx = canvas.getContext('2d');
+    // More, larger, brighter, shimmering flakes
+    const snowflakes = Array.from({length: 120}, () => ({
+        x: Math.random()*canvas.width,
+        y: Math.random()*canvas.height,
+        r: 1.8+Math.random()*3.8,
+        alpha: 0.32+Math.random()*0.38,
+        speed: 0.22+Math.random()*0.32,
+        drift: (Math.random()-0.5)*0.22,
+        shimmer: Math.random()*Math.PI*2
+    }));
+    function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        const now = Date.now()/700;
+        snowflakes.forEach(f => {
+            ctx.save();
+            // Animate shimmer
+            const shimmer = 0.5 + 0.5*Math.sin(now+f.shimmer);
+            ctx.globalAlpha = f.alpha * (0.7 + 0.3*shimmer);
+            ctx.beginPath();
+            ctx.arc(f.x, f.y, f.r * (0.85 + 0.25*shimmer), 0, Math.PI*2);
+            ctx.fillStyle = 'rgba(255, 220, 120, 0.98)';
+            ctx.shadowColor = '#fffbe6';
+            ctx.shadowBlur = 18 + 8*shimmer;
+            ctx.fill();
+            ctx.restore();
+            f.y += f.speed;
+            f.x += f.drift;
+            if (f.y > canvas.height+8) { f.y = -8; f.x = Math.random()*canvas.width; }
+            if (f.x < 0) f.x = canvas.width;
+            if (f.x > canvas.width) f.x = 0;
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+}
+window.addEventListener('DOMContentLoaded', startGoldSnow);
+
+// --- Sound Effects ---
+function playSound(id, options = {}) {
+    const el = document.getElementById(id);
+    if (el) {
+        if (options.reset) el.currentTime = 0;
+        el.play();
+    }
+}
+// Ensure gold sparkle sound loops and starts on page load
+window.addEventListener('DOMContentLoaded', function() {
+    const goldSound = document.getElementById('goldSparkleSound');
+    if (goldSound) {
+        goldSound.loop = true;
+        goldSound.currentTime = 0;
+        goldSound.volume = 0.18;
+        goldSound.play().catch(() => {
+            // If autoplay fails, try to play on first user interaction (ribbon click)
+            const ribbonBtn = document.getElementById('ribbonBtn');
+            if (ribbonBtn) {
+                const tryPlay = () => {
+                    goldSound.play().catch(()=>{});
+                    ribbonBtn.removeEventListener('click', tryPlay);
+                };
+                ribbonBtn.addEventListener('click', tryPlay);
+            }
+        });
+    }
+    const ribbonCutSound = document.getElementById('ribbonCutSound');
+    if (ribbonCutSound) {
+        ribbonCutSound.volume = 1;
+    }
+});
+
 // --- Luxurious Premium Inauguration Transition ---
 window.addEventListener('load', function() {
     const ribbonBtn = document.getElementById('ribbonBtn');
     const hero = document.querySelector('.inauguration-hero');
+    const ribbonCutSound = document.getElementById('ribbonCutSound');
     let animating = false;
     if (!ribbonBtn) { console.warn('Ribbon button not found!'); return; }
+    // No need to restart gold sparkle after ribbon cut; it loops continuously
     ribbonBtn.addEventListener('click', function(e) {
+        playSound('ribbonCutSound');
         if (animating) return;
         animating = true;
         // Fade out hero
@@ -51,123 +155,55 @@ window.addEventListener('load', function() {
             hero.style.transition = 'opacity 1.1s cubic-bezier(0.77,0,0.18,1)';
             hero.style.opacity = 0;
         }
-        // Add gold fade overlay with animated shimmer, logo watermark, and gold flecks
+        // Add gold fade overlay with animated shimmer, logo watermark
         let overlay = document.createElement('div');
         overlay.className = 'luxury-fade-overlay shimmer-bg';
         overlay.innerHTML = `
-            <canvas class="luxury-flecks-canvas"></canvas>
             <div class="luxury-logo-watermark animated">
                 <img src="/static/images/logo.jpg" alt="Kangundi Logo" />
                 <div class="luxury-logo-text">Kangundi HomeStay</div>
             </div>
         `;
         document.body.appendChild(overlay);
-        // Animate gold flecks
         setTimeout(() => {
             overlay.style.opacity = 1;
-            animateFlecks();
+            // Trigger confetti when logo is displayed
+            if (typeof confettiBlast === 'function') confettiBlast();
             setTimeout(() => {
+                // Stop gold_sparkle sound before redirect
+                const goldSound = document.getElementById('goldSparkleSound');
+                if (goldSound) {
+                    goldSound.pause();
+                    goldSound.currentTime = 0;
+                }
                 window.location.href = '/home';
-            }, 1800);
+            }, 4500);
         }, 600);
-
-        function animateFlecks() {
-            const canvas = overlay.querySelector('.luxury-flecks-canvas');
-            if (!canvas) return;
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            const ctx = canvas.getContext('2d');
-            const flecks = Array.from({length: 22}, () => ({
-                x: Math.random()*canvas.width,
-                y: Math.random()*canvas.height,
-                r: 1.2+Math.random()*2.2,
-                alpha: 0.18+Math.random()*0.22,
-                speed: 0.12+Math.random()*0.18,
-                drift: (Math.random()-0.5)*0.2
-            }));
-            function draw() {
-                ctx.clearRect(0,0,canvas.width,canvas.height);
-                flecks.forEach(f => {
-                    ctx.save();
-                    ctx.globalAlpha = f.alpha;
-                    ctx.beginPath();
-                    ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
-                    ctx.fillStyle = 'rgba(201,169,97,0.9)';
-                    ctx.shadowColor = '#fffbe6';
-                    ctx.shadowBlur = 8;
-                    ctx.fill();
-                    ctx.restore();
-                    f.y += f.speed;
-                    f.x += f.drift;
-                    if (f.y > canvas.height+8) { f.y = -8; f.x = Math.random()*canvas.width; }
-                    if (f.x < 0) f.x = canvas.width;
-                    if (f.x > canvas.width) f.x = 0;
-                });
-                requestAnimationFrame(draw);
-            }
-            draw();
-        }
     });
 });
 </script>
-</script>
-</script>
-</script>
-</script>
-</script>
-</script>
-<style>
-.inauguration-hero {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    margin: 0;
-    transition: transform 2s cubic-bezier(0.77,0,0.18,1), opacity 2s cubic-bezier(0.77,0,0.18,1);
-    z-index: 10;
-}
-.inauguration-hero.slide-up-1 {
-    transform: translateY(-30vh);
-    opacity: 0.9;
-    transition: transform 2s cubic-bezier(0.77,0,0.18,1), opacity 2s cubic-bezier(0.77,0,0.18,1);
-}
-.inauguration-hero.slide-up-2 {
-    transform: translateY(-120vh);
-    opacity: 0.7;
-    transition: transform 2.5s cubic-bezier(0.77,0,0.18,1), opacity 2.5s cubic-bezier(0.77,0,0.18,1);
-}
-
-.inauguration-hero {
-    transition: transform 1.2s cubic-bezier(0.77,0,0.18,1), opacity 1.2s cubic-bezier(0.77,0,0.18,1);
-}
-.inauguration-hero.slide-up {
-    transform: translateY(-120vh);
-    opacity: 0.7;
-}
-html, body {
-    height: 100%;
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
-    background: #18140e;
-    cursor: url('{{ url_for('static', filename='images/cursor.png') }}'), auto;
-}
-nav, footer { display: none !important; }
-.hero-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-.hero-image { width: 100%; height: 100%; object-fit: cover; display: block; filter: blur(2.5px) brightness(0.7); }
-.overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.65) 100%); z-index: 2; }
-#sparkle-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
-.theater-curtain { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%); z-index: 100; transform: translateY(-100%); transition: transform 1.5s cubic-bezier(0.25, 0.1, 0.25, 1); box-shadow: 0 10px 50px rgba(0,0,0,0.5); }
-.theater-curtain.lift { transform: translateY(0); }
-
-
-</style>
-
 <script>
-function goToHome() {
-    window.location.href = "{{ url_for('home') }}";
+// Elegant Confetti Blast (premium style)
+function confettiBlast() {
+    const colors = [
+        '#FFD700', '#FFF8DC', '#FFECB3', '#FFFACD', '#F5DEB3', '#E5C100', '#FFFBE6', '#F9D423', '#F6E27A'
+    ];
+    for (let i = 0; i < 180; i++) {
+        const conf = document.createElement('div');
+        conf.className = 'confetti';
+        conf.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
+        conf.style.left = Math.random()*100 + 'vw';
+        conf.style.animationDuration = (1.8 + Math.random()*1.7) + 's';
+        conf.style.opacity = 0.85 + Math.random()*0.15;
+        conf.style.transform = `rotate(${Math.random()*360}deg)`;
+        conf.style.width = (7+Math.random()*7)+'px';
+        conf.style.height = (14+Math.random()*10)+'px';
+        conf.style.position = 'fixed';
+        conf.style.top = '-30px';
+        conf.style.zIndex = 12000;
+        document.body.appendChild(conf);
+        setTimeout(()=>{ conf.remove(); }, 3200);
+    }
 }
 </script>
-
 {% endblock %}

@@ -1,4 +1,11 @@
 <style>
+body.slow-fade {
+    opacity: 0;
+    transition: opacity 1.6s cubic-bezier(0.77,0,0.18,1);
+}
+body.slow-fade.visible {
+    opacity: 1;
+}
 /* ===== Clean Sleek Modern Design - No Boxes ===== */
 * {
     margin: 0;
@@ -19,6 +26,57 @@ body {
 /* ...full style.css content here... */
 /* For brevity, only the first part is shown. The full CSS will be inserted in the actual patch. */
 </style>
+{% block extra_scripts %}
+<style>
+.confetti-piece {
+    position: fixed;
+    width: 14px;
+    height: 24px;
+    border-radius: 4px 4px 12px 12px;
+    opacity: 0.92;
+    z-index: 99999;
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+</style>
+<script>
+// Confetti blast from bottom corners on page load
+function confettiBlast() {
+    const colors = ['#fffbe6', '#c9a961', '#ffe066', '#f7e7b4', '#e7d09c', '#fffbe6', '#b89b4c'];
+    const count = 36;
+    for (let i = 0; i < count; i++) {
+        const conf = document.createElement('div');
+        conf.className = 'confetti-piece';
+        conf.style.background = colors[Math.floor(Math.random()*colors.length)];
+        // Start at left or right bottom
+        const fromLeft = i % 2 === 0;
+        conf.style.left = fromLeft ? '0' : 'calc(100vw - 14px)';
+        conf.style.bottom = '0';
+        conf.style.transform = `translateY(0) rotate(${Math.random()*60-30}deg)`;
+        conf.style.transition = 'transform 1.2s cubic-bezier(0.6,0,0.4,1), opacity 1.2s';
+        document.body.appendChild(conf);
+        // Animate blast
+        setTimeout(() => {
+            const angle = fromLeft ? (60 + Math.random()*30) : (120 + Math.random()*30);
+            const dist = 320 + Math.random()*180;
+            const x = Math.cos(angle*Math.PI/180) * dist * (fromLeft ? 1 : -1);
+            const y = -Math.abs(Math.sin(angle*Math.PI/180) * dist) - 120 - Math.random()*60;
+            conf.style.transform = `translate(${x}px, ${y}px) rotate(${Math.random()*360}deg)`;
+            conf.style.opacity = '0';
+        }, 30 + Math.random()*120);
+        // Remove after animation
+        setTimeout(() => conf.remove(), 1800);
+    }
+}
+window.onload = function() {
+    // Elegant fade-in
+    document.body.classList.add('slow-fade');
+    setTimeout(() => document.body.classList.add('visible'), 30);
+    // Confetti after fade-in
+    setTimeout(confettiBlast, 1200);
+};
+</script>
+{% endblock %}
 {% extends "base.html" %}
 
 {% block title %}Home - Kangundi HomeStay{% endblock %}
