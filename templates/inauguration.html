@@ -8,8 +8,7 @@
     <div class="hero-background">
         <img src="{{ url_for('static', filename='images/kangundi_3.jpeg') }}" alt="Kangundi HomeStay Estate" class="hero-image">
         <div class="overlay"></div>
-        <!-- Gold Sparkle Animation Layer -->
-        <canvas id="sparkle-canvas"></canvas>
+        <!-- No sparkle, no canvas for premium effect -->
     </div>
     <div class="hero-content">
         <div class="ceremony-divider"></div>
@@ -23,20 +22,110 @@
         <p class="estate-descriptor">A Heritage Estate of Historical Significance</p>
         <p class="estate-descriptor" style="font-size:1.05rem; color:#fffbe6; margin-top:0.5rem; font-style:normal;">We warmly await your presence for this momentous occasion.</p>
         <div class="ceremony-divider small"></div>
-        <button type="button" class="ribbon-img-container" onclick="startCeremony()" aria-label="Start Ceremony">
+        <button type="button" class="ribbon-img-container" id="ribbonBtn" aria-label="Start Ceremony">
             <img src="{{ url_for('static', filename='images/ribbon.png') }}" alt="Ceremonial Ribbon" class="ribbon-img">
         </button>
     </div>
 </div>
-<div class="theater-curtain"></div>
-{% include 'home.html' %}
+<!-- No curtain panels for premium effect -->
+<!-- Home reveal removed: will redirect to /home after animation -->
 
 <!-- Premium Stylesheet -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Montserrat:wght@400;600&display=swap">
 <link rel="stylesheet" href="{{ url_for('static', filename='premium_inauguration.css') }}">
+</script>
+</script>
+</script>
+<script>
+// --- Luxurious Premium Inauguration Transition ---
+window.addEventListener('load', function() {
+    const ribbonBtn = document.getElementById('ribbonBtn');
+    const hero = document.querySelector('.inauguration-hero');
+    let animating = false;
+    if (!ribbonBtn) { console.warn('Ribbon button not found!'); return; }
+    ribbonBtn.addEventListener('click', function(e) {
+        if (animating) return;
+        animating = true;
+        // Fade out hero
+        if (hero) {
+            hero.style.transition = 'opacity 1.1s cubic-bezier(0.77,0,0.18,1)';
+            hero.style.opacity = 0;
+        }
+        // Add gold fade overlay with animated shimmer, logo watermark, and gold flecks
+        let overlay = document.createElement('div');
+        overlay.className = 'luxury-fade-overlay shimmer-bg';
+        overlay.innerHTML = `
+            <canvas class="luxury-flecks-canvas"></canvas>
+            <div class="luxury-logo-watermark animated">
+                <img src="/static/images/logo.jpg" alt="Kangundi Logo" />
+                <div class="luxury-logo-text">Kangundi HomeStay</div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        // Animate gold flecks
+        setTimeout(() => {
+            overlay.style.opacity = 1;
+            animateFlecks();
+            setTimeout(() => {
+                window.location.href = '/home';
+            }, 1800);
+        }, 600);
+
+        function animateFlecks() {
+            const canvas = overlay.querySelector('.luxury-flecks-canvas');
+            if (!canvas) return;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const ctx = canvas.getContext('2d');
+            const flecks = Array.from({length: 22}, () => ({
+                x: Math.random()*canvas.width,
+                y: Math.random()*canvas.height,
+                r: 1.2+Math.random()*2.2,
+                alpha: 0.18+Math.random()*0.22,
+                speed: 0.12+Math.random()*0.18,
+                drift: (Math.random()-0.5)*0.2
+            }));
+            function draw() {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                flecks.forEach(f => {
+                    ctx.save();
+                    ctx.globalAlpha = f.alpha;
+                    ctx.beginPath();
+                    ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
+                    ctx.fillStyle = 'rgba(201,169,97,0.9)';
+                    ctx.shadowColor = '#fffbe6';
+                    ctx.shadowBlur = 8;
+                    ctx.fill();
+                    ctx.restore();
+                    f.y += f.speed;
+                    f.x += f.drift;
+                    if (f.y > canvas.height+8) { f.y = -8; f.x = Math.random()*canvas.width; }
+                    if (f.x < 0) f.x = canvas.width;
+                    if (f.x > canvas.width) f.x = 0;
+                });
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+    });
+});
+</script>
+</script>
+</script>
+</script>
+</script>
+</script>
+</script>
 <style>
 .inauguration-hero {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
     transition: transform 2s cubic-bezier(0.77,0,0.18,1), opacity 2s cubic-bezier(0.77,0,0.18,1);
+    z-index: 10;
 }
 .inauguration-hero.slide-up-1 {
     transform: translateY(-30vh);
@@ -76,83 +165,9 @@ nav, footer { display: none !important; }
 </style>
 
 <script>
-// Gold Sparkle Animation
-function startCeremony() {
-    // Animate the hero sliding up in two slower stages
-    var hero = document.querySelector('.inauguration-hero');
-    if (!hero.classList.contains('slide-up-1') && !hero.classList.contains('slide-up-2')) {
-        hero.classList.add('slide-up-1');
-        setTimeout(function() {
-            hero.classList.remove('slide-up-1');
-            hero.classList.add('slide-up-2');
-            setTimeout(function() {
-                hero.style.display = 'none';
-            }, 4000); // second stop: 4s
-        }, 2000); // first stop: 2s
-    }
+function goToHome() {
+    window.location.href = "{{ url_for('home') }}";
 }
-
-window.addEventListener('DOMContentLoaded', function() {
-  const canvas = document.getElementById('sparkle-canvas');
-  if (canvas) {
-    const ctx = canvas.getContext('2d');
-    let sparkles = [];
-    function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    function createSparkle() {
-        return {
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            r: Math.random() * 1.2 + 0.8,
-            o: Math.random() * 0.5 + 0.5,
-            d: Math.random() * 0.5 + 0.5,
-            t: Math.random() * 360
-        };
-    }
-    function drawSparkles() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let s of sparkles) {
-            ctx.save();
-            ctx.globalAlpha = s.o * (0.7 + 0.3 * Math.sin(Date.now()/400 + s.t));
-            ctx.beginPath();
-            ctx.arc(s.x, s.y, s.r, 0, 2 * Math.PI);
-            ctx.fillStyle = 'rgba(201, 169, 97, 0.85)';
-            ctx.shadowColor = '#fffbe6';
-            ctx.shadowBlur = 8;
-            ctx.fill();
-            ctx.restore();
-        }
-    }
-    function animate() {
-        for (let s of sparkles) {
-            s.y += s.d;
-            if (s.y > canvas.height) {
-                s.x = Math.random() * canvas.width;
-                s.y = -5;
-            }
-        }
-        drawSparkles();
-        requestAnimationFrame(animate);
-    }
-    function initSparkles() {
-        sparkles = [];
-        for (let i = 0; i < Math.max(60, window.innerWidth/20); i++) {
-            sparkles.push(createSparkle());
-        }
-    }
-    window.addEventListener('resize', () => {
-        resizeCanvas();
-        initSparkles();
-    });
-    resizeCanvas();
-    initSparkles();
-    animate();
-  }
-});
-
-
 </script>
 
 {% endblock %}
